@@ -38,12 +38,14 @@ class Phone(NetworkEntry):
     ]
 
 class Library(NetworkEntry):
+    # Blocks port 22
     routers = [
         'e4:c7:22:f2:9a:46',  # Wireless
         '00:15:c7:01:a7:00',  # Wireless
         '00:13:c4:80:e2:89',  # Ethernet
         '00:15:c7:01:a7:00',  # Ethernet
     ]
+    ports = [80, 443]
 
 # My locations
 LOCATIONS = {
@@ -53,8 +55,6 @@ LOCATIONS = {
     'shanghai',
     'bangalore'
 }
-
-CONFIG_FILE = "/tmp/config"
 
 # List of trusted hosts (won't scramble known_hosts file)
 TRUSTED_HOSTS = ['laptop', 'saturn.workinghard.com']

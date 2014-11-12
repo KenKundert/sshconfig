@@ -26,7 +26,7 @@ The contents of ~/.ssh/config are replaced when you run::
 
 The above hosts.py file is converted into the following ssh config file::
 
-   # SSH Configuration for Home network
+   # SSH Configuration for generic network
    # Generated at 1:04 PM on 22 July 2014.
 
    #
@@ -51,11 +51,14 @@ hosts.py, you describe your host entries.
 
 Config
 ''''''
-A typical config.py file would start with something like the following and then 
-would contain many host specifications::
+A typical config.py file would start with would look like::
 
    #
    # SSH Config -- Basic Network Configuration
+   #
+   # Defines known networks. Recognizes networks by the MAC addresses of their 
+   # routers, can use this information to set default location, ports, and 
+   # proxy.
    #
 
    from sshconfig import NetworkEntry
@@ -66,14 +69,18 @@ would contain many host specifications::
 
    class Work(NetworkEntry):
        routers = ['f0:90:76:9c:b1:37']   # Router MAC addresses
-       proxy = 'work'
 
-   class SpecialtyCoffee(NetworkEntry):
+   class Library(NetworkEntry):
        # Blocks port 22
-       routers = ['0f:29:81:c9:98:1d']   # Router MAC addresses
+       routers = [
+           'e4:c7:22:f2:9a:46',  # Wireless
+           '00:15:c7:01:a7:00',  # Wireless
+           '00:13:c4:80:e2:89',  # Ethernet
+           '00:15:c7:01:a7:00',  # Ethernet
+       ]
        ports = [80, 443]
 
-   # Location of output file
+   # Location of output file (must be an absolute path)
    CONFIG_FILE = "~/.ssh/config"
 
    # Attribute overrides for all hosts
@@ -99,8 +106,8 @@ would contain many host specifications::
    # Known proxies
    PROXIES = {
        'work': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
-       #'work': 'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p', ',
-       tunnelr': 'ssh tunnelr -W %h:%p',
+       'school': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p', ',
+       'tunnelr': 'ssh tunnelr -W %h:%p',
    }
 
    # My locations
@@ -114,7 +121,7 @@ following attributes are interpreted.
 
 routers:
    A list of MAC addresses for the router that are used to identify the network.  
-   To find these, connect to the network an run the /sbin/arp command.
+   To find these, connect to the network and run the /sbin/arp command.
 
 location:
    The default setting for the location (value should be chosen from LOCATIONS) 
@@ -170,12 +177,14 @@ aliases:
    used to refer to this host.
 
 trusted:
-   Indicates that the host should be trusted. Currently that means that agent 
-   forwarding will be configured for the non-tunneling version of the host.
+   Indicates that the base host should be trusted. Currently that means that 
+   agent forwarding will be configured for the non-tunneling version of the 
+   host.
 
 tun_trusted:
-   Indicates that the host should be trusted. Currently that means that agent 
-   forwarding will be configured for the tunneling version of the host.
+   Indicates that the tunneling version of the host should be trusted. Currently 
+   that means that agent forwarding will be configured for the tunneling version 
+   of the host.
 
 guests:
    A list of machines that are accessed using this host as a proxy.
@@ -256,7 +265,7 @@ In this next example, we customize the proxy command based on the port chosen::
        port = ports.choose([22, 80])
        if port in [80]:
            proxyCommand = 'socat - PROXY:%h:127.0.0.1:22,proxyport=%p'
-       identityFile = 'tunnelr'
+       identityFile = 'my2014key'
        dynamicForward = 9999
 
 An entry such as this would be used if sshd is configured to directly accept 
@@ -288,9 +297,9 @@ Hostname
 
 The hostname may be a simple string, or it may be a dictionary. If given as 
 a dictionary, each entry will have a string key and string value. The key would 
-be the name of the network and the value would be the hostname to use when on 
-that network. One of the keys should be 'default', which is used if the network 
-does not match one of the given networks. For example::
+be the name of the network (in lower case) and the value would be the hostname 
+to use when on that network. One of the keys should be 'default', which is used 
+if the network does not match one of the given networks. For example::
 
    class Home(HostEntry):
        hostname = {
@@ -402,11 +411,18 @@ background ass follows::
 
    ssh -f -N home-tun
 
+If you have set up connection sharing using ControlMaster and then run::
+
+   ssh home
+
+SSH will automatically share the existing connection rather than starting a new 
+one.
+
 Both local and remote forwards should be specified as lists. The lists can 
 either be simple strings, or can be tuple pairs if you would like to give 
-a description for the forward. The string that discribes the forward has the 
+a description for the forward. The string that describes the forward has the 
 syntax: 'lclHost:lclPort rmtHost:rmtPort' where lclHost and rmtHost can be 
-either a host name of an IP address and lclPort and rmtPort are port numbers.
+either a host name or an IP address and lclPort and rmtPort are port numbers.
 For example::
 
    '11025 localhost:25'
@@ -605,10 +621,10 @@ Proxies
 -------
 
 Some networks block connections to port 22, and if your desired host accepts 
-connections on other ports you can use the --ports feature described above to 
-work around these blocks. However, some networks block all ports and force you 
-to use a proxy.  Or, if you do have open ports but your host does not accept ssh 
-traffic on those ports, you can sometimes use a proxy to access your host.
+connections on other ports you can use the --ports feature described above you 
+can work around these blocks. However, some networks block all ports and force 
+you to use a proxy.  Or, if you do have open ports but your host does not accept 
+ssh traffic on those ports, you can sometimes use a proxy to access your host.
 
 Available proxies are specified by adding PROXIES to the hosts.py file. Then, if 
 you would like to use a proxy, you use the --proxy (or -P) command line argument 
@@ -620,7 +636,7 @@ to specify the proxy by name. For example::
    }
 
 Two HTTP proxies are described, the first capable of bypassing the corporate 
-firewall and the second does the same for the shool's firewall. If preferred, 
+firewall and the second does the same for the school's firewall. If preferred, 
 you can use socat rather than proxytunnel to accomplish the same thing::
 
    PROXIES = {
