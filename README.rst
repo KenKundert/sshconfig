@@ -106,7 +106,7 @@ A typical config.py file would start with would look like::
    # Known proxies
    PROXIES = {
        'work': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
-       'school': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p', ',
+       'school': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
        'tunnelr': 'ssh tunnelr -W %h:%p',
    }
 
@@ -631,8 +631,8 @@ you would like to use a proxy, you use the --proxy (or -P) command line argument
 to specify the proxy by name. For example::
 
    PROXIES = {
-       'work': 'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p', ',
-       'school': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p', ',
+       'work': 'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
+       'school': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
    }
 
 Two HTTP proxies are described, the first capable of bypassing the corporate 
