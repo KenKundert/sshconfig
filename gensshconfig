@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+
+"""
+Generate SSH Config File
+
+Creates an ssh config file that is specifically tailored to the current network
+situation.
+
+Usage:
+    gensshconfig [options]
+
+Options:
+    -p PORTS, --ports PORTS           specifies list of available ports
+    -P NAME, --proxy NAME             specifies the global proxy
+    -l LOCATION, --location LOCATION  specifies location
+    -n NETWORK, --network NETWORK     specifies the network
+    -a, --available                   list available proxies, locations, and networks
+
+Specify the list of available ports as a comma separated list (no spaces). For
+example, --ports=80,443.
+
+Normally the network is determined automatically and need not be specified.
+"""
+
+from sshconfig import NetworkEntry, HostEntry, ports, locations
+from core import Hosts, identifyNetwork
+from fileutils import expandPath
+from docopt import docopt
+from textwrap import dedent, indent
+import time
+import os
+
+# Import configuration information
+try:
+    from config import CONFIG_FILE
+except ImportError:
+    CONFIG_FILE = '~/.ssh/config'
+
+try:
+    from config import OVERRIDES
+except ImportError:
+    OVERRIDES = ''
+
+try:
+    from config import DEFAULTS
+except ImportError:
+    DEFAULTS = ''
+
+try:
+    from config import PROXIES
+except ImportError:
+    PROXIES = {}
+
+try:
+    from config import LOCATIONS
+except ImportError:
+    LOCATIONS = {}
+
+# Identify the configuration to be used
+network, proxy = identifyNetwork()
+networks = [each.name() for each in NetworkEntry.all_networks()]
+
+# Read command line 
+options = docopt(__doc__)
+if options['--available']:
+    print(
+        'Foreign proxies (you can also use ssh hosts as proxies):\n    '
+      + '\n    '.join(sorted(PROXIES.keys()))
+    )
+    print('Known locations:\n    ' + '\n    '.join(sorted(LOCATIONS)))
+    print('Networks:\n    ' + '\n    '.join(sorted(networks)))
+    exit()
+
+# Apply command line options (they override any chosen by network)
+network = options['--network'] if options['--network'] else network
+proxy = options['--proxy'] if options['--proxy'] else proxy
+if options['--ports']:
+    ports.available(options['--ports'])
+if options['--location']:
+    locations.set_location(options['--location'])
+
+# Print out any locations that were seen but are not in list of known locations
+unknown = locations.unknown_locations(LOCATIONS)
+if unknown:
+    print('The following locations are unknown (add them to LOCATIONS):')
+    print('    ' + '\n    '.join(sorted(unknown)))
+
+# Get description of this situation
+desc = ['%s network' % network]
+if locations.my_location:
+    desc.append('located in %s' % locations.my_location)
+if ports.available_ports:
+    desc.append(
+        'using port%s %s' % (
+            's' if len(ports.available_ports) > 1 else ''
+          , ', '.join([str(port) for port in ports.available_ports])
+        )
+    )
+if proxy:
+    desc.append('proxying through %s' % proxy)
+#print("Configuring ssh for %s." % (' '.join(desc)))
+print(' '.join(desc))
+
+# Import the hosts
+# This must be done only after the port, location, and proxy choices are made.
+import hosts as unneeded
+
+# Get path to config file
+config_file = expandPath(CONFIG_FILE)
+assert os.path.isabs(config_file)
+
+# Process each host
+hosts = Hosts(network, networks, proxy, PROXIES, config_file)
+for each in HostEntry.all_hosts():
+    hosts.process(each, tunnels = False)
+    hosts.process(each, tunnels = True)
+
+# Generate the config file
+header = []
+prefix = []
+body = []
+suffix = []
+
+# Output header
+header.append('# SSH Configuration for %s network.' % network)
+header.append(time.strftime("# Generated at %-I:%M %p on %d %B %Y."))
+
+# Output user specified global overrides
+if OVERRIDES:
+    prefix.append(dedent('''
+        #
+        # GLOBAL OVERRIDES
+        #
+    '''))
+    prefix.append(dedent(OVERRIDES).strip())
+
+# Output hosts
+body.append(dedent('''
+    #
+    # HOSTS
+    #
+'''))
+body.append(hosts.output())
+
+# Output user specified global defaults
+if DEFAULTS:
+    suffix.append(dedent('''
+        #
+        # GLOBAL DEFAULTS
+        #
+    '''))
+    suffix.append('host *\n' + indent(dedent(DEFAULTS).strip(), prefix='    '))
+
+try:
+    output = [
+        '\n'.join(each) for each in [header, prefix, body, suffix]
+        if each
+    ]
+
+    with open(config_file, 'w') as f:
+        f.write('\n\n'.join(output) + '\n')
+    os.chmod(config_file, 0o600)
+except IOError as error:
+    exit('%s: %s.\n' % (err.filename, err.strerror))

@@ -1,0 +1,19 @@
+#!/bin/csh -f
+
+set nonomatch
+
+rm -f README.pdf
+
+# the rest is common to all python directories
+rm -f *.pyc *.pyo .test*.sum expected result install.out
+rm -rf build *.egg-info dist __pycache__ .coverage .coverage-html
+foreach i (*/clean)
+    if ($i == "*/clean") break
+    #echo $i
+    (cd $i:h; ./clean)
+end
+foreach i (*/Makefile)
+    if ($i == "*/Makefile") break
+    #echo $i
+    (cd $i:h; make clean)
+end

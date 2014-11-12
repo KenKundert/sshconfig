@@ -1,0 +1,22 @@
+#!/bin/csh -f
+set supportedPythonVersions=(3.3)
+set packageName=sshconfig
+
+rm -f install.out
+
+foreach vers ($supportedPythonVersions)
+    # remove build directory from a previous install to assure a clean install
+    rm -rf build
+
+    which python$vers >& /dev/null
+    if ($status == 0) then
+        echo "Installing $packageName to Python$vers."
+        python$vers setup.py install --quiet --user >>& install.out
+        if ($status) then
+            echo "Problems found, aborting (see install.out)"
+            exit(1)
+        endif
+    else
+        echo "Cannot install $packageName to Python$vers, it is not available."
+    endif
+end
