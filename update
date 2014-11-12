@@ -1,5 +1,0 @@
-#!/bin/csh -f
-
-hg ci -m 'Update'
-hg push
-./install

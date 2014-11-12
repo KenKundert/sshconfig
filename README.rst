@@ -61,10 +61,10 @@ would contain many host specifications::
    from sshconfig import NetworkEntry
 
    # Characteristics of the known networks
-   class HomeNetwork(NetworkEntry):
+   class Home(NetworkEntry):
        routers = ['a8:93:14:8a:e4:31']   # Router MAC addresses
 
-   class HomeNetwork(NetworkEntry):
+   class Work(NetworkEntry):
        routers = ['f0:90:76:9c:b1:37']   # Router MAC addresses
        proxy = 'work'
 
@@ -294,7 +294,7 @@ does not match one of the given networks. For example::
 
    class Home(HostEntry):
        hostname = {
-           'HomeNetwork': '192.168.0.1',
+           'home': '192.168.0.1',
            'default': '74.125.232.64'
       }
 
@@ -418,14 +418,14 @@ is *no*, then the forwarded ports are only available from the local host.
 However, if GatewayPorts is set to *clientspecified*, then the accessibility of 
 the forward address is set by the local host specified.  For example:
 
-=================================== ==============================
-``5280 localhost:5280``             accessible only from localhost
-``localhost:5280 localhost:5280``   accessible only from localhost
-``*:5280 localhost:5280``           accessible from anywhere
-``0.0.0.0:5280 localhost:5280``     accessible from anywhere
-``lucifer:5280 localhost:5280``     accessible from lucifer
-``192.168.0.1:5280 localhost:5280`` accessible from 192.168.0.1
-=================================== ==============================
+=============================== ==============================
+5280 localhost:5280             accessible only from localhost
+localhost:5280 localhost:5280   accessible only from localhost
+*:5280 localhost:5280           accessible from anywhere
+0.0.0.0:5280 localhost:5280     accessible from anywhere
+lucifer:5280 localhost:5280     accessible from lucifer
+192.168.0.1:5280 localhost:5280 accessible from 192.168.0.1
+=============================== ==============================
 
 The VNC function is provided for converting VNC host and display number 
 information into a setting suitable for a forward. You can give the local 
@@ -455,7 +455,7 @@ An example of many of these features::
        aliases = ['lucifer']
        user = 'herbie'
        hostname = {
-           'HomeNetwork': '192.168.0.1',
+           'home': '192.168.0.1',
            'default': '74.125.232.64'
        }
        port = ports.choose([22, 80])
@@ -521,7 +521,7 @@ For example::
        aliases = ['earch']
        user = 'herbie'
        hostname = {
-           'WorkNetwork': '192.168.1.16',
+           'work': '192.168.1.16',
            'default': '173.11.122.58'
        }
        trusted = True
