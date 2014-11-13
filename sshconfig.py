@@ -51,6 +51,13 @@ class NetworkEntry():
         fields.update(my_fields)
         return fields
 
+    @classmethod
+    def get_field(cls, clsname, fieldname):
+        for sub in cls.__subclasses__():
+            if sub.__name__.lower() == clsname:
+                return sub.__dict__.get(fieldname)
+        return None
+
 # Used to describe an available host
 class HostEntry():
     def __init__(self):
@@ -87,7 +94,7 @@ class HostEntry():
                         # Above works in most cases, but it uses the ssh config 
                         # entry name as %h rather than the hostname, so it fails 
                         # when ssh config entry name does not correspond to 
-                        # a know host by the proxy host (occurs with tunneling 
+                        # a know host by the proxy host (occurs with forwarding 
                         # entries).  So instead use the actual specified 
                         # hostname.
                     'ssh {} -W {}:{}'.format(parent.name(), hostname, port),

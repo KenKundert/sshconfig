@@ -28,7 +28,13 @@ class Home(NetworkEntry):
 
 class Work(NetworkEntry):
     # Work network
-    routers = ['78:92:4d:2b:30:c6']
+    routers = [
+        '00:1f:9d:81:d8:00',
+        '40:b3:95:68:a8:2a',
+        '98:d6:f7:6a:d1:48',
+        'd0:22:be:03:9f:53',
+    ]
+    proxy = 'work_proxy'
 
 class Phone(NetworkEntry):
     # Phone network
@@ -55,6 +61,11 @@ LOCATIONS = {
     'shanghai',
     'bangalore'
 }
+
+# For now/place the ssh config file in a place where it will not do any damage 
+# by overwriting the one we are actually using. Delete the line once you are 
+# happy with your configuration.
+CONFIG_FILE = "/tmp/sshconfig"
 
 # List of trusted hosts (won't scramble known_hosts file)
 TRUSTED_HOSTS = ['laptop', 'saturn.workinghard.com']
@@ -85,5 +96,6 @@ DEFAULTS = """
 
 # Known proxies
 PROXIES = {
-    'work': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
+    'work_proxy':
+        'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
 }

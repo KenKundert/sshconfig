@@ -405,8 +405,8 @@ includes the forwarding. The reason this is done is that once one connection is
 setup with forwarding, a second connection that also attempts to performing 
 forwarding will produce a series of error messages indicating that the ports are 
 in use and so cannot be forwarded. Instead, you should only use the tunneling 
-version once when you want to set up the forwarding tunnels, and you the base 
-entry at all other times. Often tunneling connections are setup to run in the 
+version once when you want to set up the port forwards, and you the base entry 
+at all other times. Often forwarding connections are setup to run in the 
 background ass follows::
 
    ssh -f -N home-tun
@@ -499,7 +499,7 @@ On a foreign network it produces::
        identitiesOnly yes
        forwardAgent yes
 
-   # Lucifer (with tunnels)
+   # Lucifer (with forwards)
    host home-tun lucifer-tun
        user herbie
        hostname 74.125.232.64
@@ -526,9 +526,9 @@ Guests
 
 The 'guests' attribute is a list of hostnames that would be accessed by using 
 the host being described as a proxy. The attributes specified are shared with 
-its guests (other than hostname and port).  The name used for the guest in the 
-ssh config file would be the hostname combined with the guest name using 
-a hyphen.
+its guests (other than hostname, port, and port forwards).  The name used for 
+the guest in the ssh config file would be the hostname combined with the guest 
+name using a hyphen.
 
 For example::
 
@@ -547,6 +547,11 @@ For example::
            ('saturn', "96GB Compute server"),
            ('neptune', "64GB Compute server"),
        ]
+       localForward = [
+           (VNC(dispNum=21, rmtHost=jupiter), "VNC on Jupiter"),
+           (VNC(dispNum=22, rmtHost=saturn), "VNC on Saturn"),
+           (VNC(dispNum=23, rmtHost=neptune), "VNC on Neptune"),
+       ]
 
 On a foreign network produces::
 
@@ -557,6 +562,20 @@ On a foreign network produces::
        identityFile /home/herbie/.ssh/my2014key
        identitiesOnly yes
        forwardAgent yes
+
+   # Entry Host to Machine Farm (with forwards)
+   host farm-tun earth-tun
+       user herbie
+       hostname 173.11.122.58
+       identityFile /home/herbie/.ssh/my2014key
+       identitiesOnly yes
+       forwardAgent yes
+       localForward 5921 jupiter:5921
+           # VNC on jupiter
+       localForward 5922 saturn:5922
+           # VNC on Saturn
+       localForward 5923 neptune:5923
+           # VNC on Neptune
 
    # 128GB Computer Server
    host farm-jupiter
@@ -600,6 +619,10 @@ For example::
    class Jupiter(Farm):
        description = "128GB Compute Server"
        hostname = 'jupiter'
+       tun_trusted = True
+       remoteForward = [
+           ('14443 localhost:22', "Reverse SSH tunnel used by sshfs"),
+       ]
 
 Notice, that Jupiter subclasses Farm, which was described in an example above.  
 This generates::
@@ -613,18 +636,30 @@ This generates::
        forwardAgent no
        proxyCommand ssh farm -W %h:%p
 
+   # 128GB Compute Server (with forwards)
+   host jupiter-tun
+       user herbie
+       hostname jupiter
+       identityFile /home/herbie/.ssh/my2014key
+       identitiesOnly yes
+       forwardAgent no
+       proxyCommand ssh farm -W %h:%p
+       remoteForward 14443 localhost:22
+
 If you contrast this with farm-jupiter above, you will see that the name is 
 different, as is the trusted status (farm-jupiter inherits 'trusted' from Host, 
-whereas jupiter does not).
+whereas jupiter does not). Also, there are two versions, one with port 
+forwarding and one without.
+
 
 Proxies
 -------
 
-Some networks block connections to port 22, and if your desired host accepts 
-connections on other ports you can use the --ports feature described above you 
-can work around these blocks. However, some networks block all ports and force 
-you to use a proxy.  Or, if you do have open ports but your host does not accept 
-ssh traffic on those ports, you can sometimes use a proxy to access your host.
+Some networks block connections to port 22. If your desired host accepts 
+connections on other ports, you can use the --ports feature described above to 
+work around these blocks. However, some networks block all ports and force you 
+to use a proxy.  Or, if you do have open ports but your host does not accept ssh 
+traffic on those ports, you can sometimes use a proxy to access your host.
 
 Available proxies are specified by adding PROXIES to the hosts.py file. Then, if 
 you would like to use a proxy, you use the --proxy (or -P) command line argument 
@@ -676,3 +711,37 @@ indicating it should proxy through tunnelr, but Jupiter retains its original
 proxyCommand.  So when connecting to jupiter a two link proxy chain is used: 
 packets are first sent to tunnelr, which then forwards them to farm, which 
 forwards them to jupiter.
+
+You can specify a proxy on the NetworkEntry for you network. If you do, that 
+proxy will be used by default when on that network for all hosts that not on 
+that network. A host is said to be on the network if the hostname is 
+specifically given for that network. For example, assume you have a network 
+configured for work::
+
+   class Work(NetworkEntry):
+       # Work network
+       routers = ['78:92:4d:2b:30:c6']
+       proxy = 'work'
+
+Then assume you have a host that is not configured for that network (Home) and 
+one that is (Farm).
+
+   class Home(HostEntry):
+       description = "Home Server"
+       aliases = ['lucifer']
+       user = 'herbie'
+       hostname = {
+           'home': '192.168.0.1',
+           'default': '74.125.232.64'
+       }
+   class Farm(HostEntry):
+       description = "Entry Host to Machine farm"
+       aliases = ['mercury']
+       user = 'herbie'
+       hostname = {
+           'work': '192.168.1.16',
+           'default': '173.11.122.58'
+       }
+
+Then when on the work network, when you connect to Home you will use the proxy 
+and when you connect to farm, you will not.

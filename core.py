@@ -1,6 +1,6 @@
 # Core Internal Classes for SSHConfig
 
-from sshconfig import NetworkEntry
+from sshconfig import NetworkEntry, locations
 from fileutils import expandPath, makePath, normPath, getHead, Execute, ExecuteError
 import os
 
@@ -131,16 +131,16 @@ class Hosts():
                 [header] + fields.render_guest(guestname, name)
             ))
 
-    def process(self, entry, tunnels):
+    def process(self, entry, forwards):
         fields = Fields()
 
         # Get fields
         attributes = Attributes(entry.fields())
         name = entry.__name__.lower()
-        forwards = False
+        forwarding = False
 
-        # Return if this is tunnels version and there are no tunnels
-        if tunnels:
+        # Return if this is forwarding version and there are no forwards
+        if forwards:
             if (
                 'localForward' not in attributes and
                 'remoteForward' not in attributes and
@@ -149,7 +149,7 @@ class Hosts():
                 return
             name = '%s-tun' % name
         else:
-            # Not interested in tunnels, so remove them
+            # Not interested in forwards, so remove them
             attributes.remove('localForward')
             attributes.remove('remoteForward')
             attributes.remove('dynamicForward')
@@ -158,13 +158,13 @@ class Hosts():
         attribute = attributes.get('description')
         if attribute:
             key, value, desc = attribute
-            description = (value + ' (with tunnels)') if tunnels else value
+            description = (value + ' (with forwards)') if forwards else value
         else:
             description = None
 
         # Aliases
         aliases = [
-            val + ('-tun' if tunnels else '')
+            val + ('-tun' if forwards else '')
             for key, val, desc in attributes.getall('aliases')
         ]
 
@@ -174,25 +174,29 @@ class Hosts():
         # Hostname
         attribute = attributes.get('hostname')
         if attribute:
-            key, hostname, desc = attribute
-            if isinstance(hostname, dict):
-                unknown_networks = set(hostname.keys()) - self.networks
+            key, hostnames, desc = attribute
+            if isinstance(hostnames, dict):
+                unknown_networks = set(hostnames.keys()) - self.networks
                 if unknown_networks:
                     print('%s: uses unknown networks: %s' % (
                         name, ', '.join(sorted(unknown_networks))
                     ))
-                if self.network in hostname:
-                    hostname = hostname[self.network]
-                elif DEFAULT_NETWORK_NAME in hostname:
-                    hostname = hostname[DEFAULT_NETWORK_NAME]
+                if self.network in hostnames:
+                    hostname = hostnames[self.network]
+                elif DEFAULT_NETWORK_NAME in hostnames:
+                    hostname = hostnames[DEFAULT_NETWORK_NAME]
                 else:
                     exit("%s: missing '%s' hostname." % (
                         name, DEFAULT_NETWORK_NAME
                     ))
                 attribute = key, hostname, desc
+            else:
+                hostnames = {}
+                hostname = hostnames
             fields.append(attribute)
         else:
             hostname = '%h'
+            hostnames = {}
 
         # Port
         attribute = attributes.get('port')
@@ -216,7 +220,7 @@ class Hosts():
         # ForwardAgent
         trusted = attributes.get('trusted')
         tun_trusted = attributes.get('tun_trusted')
-        attribute = tun_trusted if tunnels else trusted
+        attribute = tun_trusted if forwards else trusted
         if attribute:
             key, trusted, desc = attribute
         else:
@@ -230,30 +234,45 @@ class Hosts():
         for attribute in attributes.getall('localForward'):
             checkForward(attribute)
             fields.append(attribute)
-            forwards = True
+            forwarding = True
 
         # RemoteForwards
         for attribute in attributes.getall('remoteForward'):
             checkForward(attribute)
             fields.append(attribute)
-            forwards = True
+            forwarding = True
 
         # DynamicForward
         attribute = attributes.get('dynamicForward')
         if attribute:
             checkForward(attribute, True)
             fields.append(attribute)
-            forwards = True
+            forwarding = True
 
         # ExitOnForwardFailure
-        if forwards:
+        if forwarding:
             fields.append(('exitOnForwardFailure', 'yes', None))
 
         # ProxyCommand
         attribute = attributes.get('proxyCommand')
         if attribute:
             fields.append(attribute)
-        elif self.proxy and self.proxy != entry.__name__.lower():
+        elif (
+            self.proxy and not (
+                self.proxy == entry.__name__.lower() or (
+                    (self.proxy == NetworkEntry.get_field(self.network, 'proxy'))
+                    and (self.network in hostnames)
+                )
+            )
+        ):
+            # This host does not have a ProxyCommand entry, add it if a global 
+            # proxy is requested unless this host is the itself the proxy or if 
+            # this host is on the same network as the proxy.
+            # Specifically, do not use a proxy if proxy in use was specified on 
+            # a network for which this host is specifically configured.  That 
+            # generally indicates that there is a direct path to this host on 
+            # this network and the proxy is not needed.
+
             fields.append((
                 'proxyCommand',
                 self.proxies.get(
@@ -269,7 +288,7 @@ class Hosts():
             fields.append(attribute)
 
         # Guests (hosts that use this host as a proxy)
-        guests = [] if tunnels else attributes.getall('guests')
+        guests = [] if forwards else attributes.getall('guests')
 
         # Save host
         self._append(name, fields, aliases, description, guests)

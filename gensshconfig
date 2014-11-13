@@ -112,8 +112,8 @@ assert os.path.isabs(config_file)
 # Process each host
 hosts = Hosts(network, networks, proxy, PROXIES, config_file)
 for each in HostEntry.all_hosts():
-    hosts.process(each, tunnels = False)
-    hosts.process(each, tunnels = True)
+    hosts.process(each, forwards = False)
+    hosts.process(each, forwards = True)
 
 # Generate the config file
 header = []

@@ -38,15 +38,15 @@ class Work(HostEntry):
     trusted = True
     identityFile = 'my2014key'
     localForward = [
-        (VNC(16), "VNC on saturn"),
-        (VNC(43, 'jupiter'), "VNC on Jupiter"),
+        (VNC(16), "VNC on earth"),
         ('9100 192.168.1.51:9100', "Printer"),
-        ('1025 jupiter:25',  "Mail - SMTP"),
-        ('1143 jupiter:143', "Mail - IMAP"),
-        ('4190 jupiter:4190', "Mail - Sieve"),
+        ('1025 venus:25',  "Mail - SMTP"),
+        ('1143 venus:143', "Mail - IMAP"),
+        ('4190 venus:4190', "Mail - Sieve"),
     ]
 
 class Mail(Work):
+    aliases = ['venus']
     description = "Designer's Guide mail server"
 
 # Farm {{{1
@@ -64,6 +64,9 @@ class Farm(HostEntry):
         ('jupiter', "128GB Compute server"),
         ('saturn',  "96GB Compute server"),
         ('neptune', "64GB Compute server"),
+    ]
+    localForward = [
+        (VNC(16), "VNC on mercury"),
     ]
 
 
