@@ -437,7 +437,7 @@ the forward address is set by the local host specified.  For example:
 =============================== ==============================
 5280 localhost:5280             accessible only from localhost
 localhost:5280 localhost:5280   accessible only from localhost
-*:5280 localhost:5280           accessible from anywhere
+\*:5280 localhost:5280          accessible from anywhere
 0.0.0.0:5280 localhost:5280     accessible from anywhere
 lucifer:5280 localhost:5280     accessible from lucifer
 192.168.0.1:5280 localhost:5280 accessible from 192.168.0.1
@@ -518,7 +518,6 @@ On a foreign network it produces::
            # VNC
        dynamicForward 9999
        exitOnForwardFailure yes
-
 
 
 Guests
@@ -724,7 +723,7 @@ configured for work::
        proxy = 'work'
 
 Then assume you have a host that is not configured for that network (Home) and 
-one that is (Farm).
+one that is (Farm)::
 
    class Home(HostEntry):
        description = "Home Server"
@@ -734,6 +733,7 @@ one that is (Farm).
            'home': '192.168.0.1',
            'default': '74.125.232.64'
        }
+
    class Farm(HostEntry):
        description = "Entry Host to Machine farm"
        aliases = ['mercury']
