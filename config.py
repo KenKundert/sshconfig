@@ -65,7 +65,7 @@ LOCATIONS = {
 # For now/place the ssh config file in a place where it will not do any damage 
 # by overwriting the one we are actually using. Delete the line once you are 
 # happy with your configuration.
-CONFIG_FILE = "/tmp/sshconfig"
+CONFIG_FILE = "sshconfig.out"
 
 # List of trusted hosts (won't scramble known_hosts file)
 TRUSTED_HOSTS = ['laptop', 'saturn.workinghard.com']

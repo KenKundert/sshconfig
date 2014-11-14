@@ -107,7 +107,8 @@ import hosts as unneeded
 
 # Get path to config file
 config_file = expandPath(CONFIG_FILE)
-assert os.path.isabs(config_file)
+if not os.path.isabs(config_file):
+    print("CONFIG_FILE (in config.py) should be given an absolute path.")
 
 # Process each host
 hosts = Hosts(network, networks, proxy, PROXIES, config_file)
