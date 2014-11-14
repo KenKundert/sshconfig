@@ -142,9 +142,9 @@ A typical config.py file would start with would look like::
 
    # Known proxies
    PROXIES = {
-       'work': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
-       'school': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
-       'tunnelr': 'ssh tunnelr -W %h:%p',
+       'work_proxy': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
+       'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
+       'tunnelr_proxy': 'ssh tunnelr -W %h:%p',
    }
 
    # My locations
@@ -702,8 +702,8 @@ you would like to use a proxy, you use the --proxy (or -P) command line argument
 to specify the proxy by name. For example::
 
    PROXIES = {
-       'work': 'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
-       'school': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
+       'work_proxy': 'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
+       'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
    }
 
 Two HTTP proxies are described, the first capable of bypassing the corporate 
@@ -711,13 +711,13 @@ firewall and the second does the same for the school's firewall. If preferred,
 you can use socat rather than proxytunnel to accomplish the same thing::
 
    PROXIES = {
-       'work': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
-       'school': 'socat - PROXY:sproxy.fna.learning.edu:%h:%p,proxyport=1080',
+       'work_proxy': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
+       'school_proxy': 'socat - PROXY:sproxy.fna.learning.edu:%h:%p,proxyport=1080',
    }
 
 When at work, you should generate your ssh config file using::
 
-   gensshconfig --proxy=work
+   gensshconfig --proxy=work_proxy
 
 or::
 
@@ -757,7 +757,7 @@ configured for work::
    class Work(NetworkEntry):
        # Work network
        routers = ['78:92:4d:2b:30:c6']
-       proxy = 'work'
+       proxy = 'work_proxy'
 
 Then assume you have a host that is not configured for that network (Home) and 
 one that is (Farm)::
@@ -770,6 +770,7 @@ one that is (Farm)::
            'home': '192.168.0.1',
            'default': '74.125.232.64'
        }
+       proxyCommand = 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80'
 
    class Farm(HostEntry):
        description = "Entry Host to Machine farm"
