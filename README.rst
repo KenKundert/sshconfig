@@ -38,6 +38,9 @@ The following situations are supported:
    restrictions). In this way you can hard code your host names in applications 
    such as Mercurial or Git, and they automatically adapt to your existing 
    network.
+#. The entire application, including the configuration files, are Python code, 
+   so you have considerable freedom to change the configuration based on things 
+   like the name of the machine or the user when generating the SSH config file.
 
 Trivial Configuration
 ---------------------
