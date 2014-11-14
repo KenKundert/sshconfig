@@ -145,6 +145,11 @@ A typical config.py file would start with would look like::
        'work_proxy': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
        'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
        'tunnelr_proxy': 'ssh tunnelr -W %h:%p',
+           # it is not necessary to add tunnelr as a proxy, you can always 
+           # specify a host as a proxy, and if you do you will get this 
+           # proxyCommand by default. The only benefit adding this entry to 
+           # PROXIES provides is that tunnelr is listed in the available proxies 
+           # when using the --available command line option.
    }
 
    # My locations
