@@ -288,9 +288,8 @@ or::
 This causes ports.choose() to return the first port given in the --ports 
 specification if it is given anywhere in the list of available ports given as an 
 argument to choose(). If the first port does not work, it will try to return the 
-next one given, and so on. You are free to specify as many ports as you wish. So 
-in this example, port 80 would be returned.  If -p443,80 were specified, then 
-port 443 would be used.
+next one given, and so on. So in this example, port 80 would be returned.  If 
+-p443,80 were specified, then port 443 would be used.
 
 You can specify as many ports as you like in a --ports specification, just 
 separate them with a comma and do not add spaces.
@@ -340,8 +339,9 @@ Hostname
 The hostname may be a simple string, or it may be a dictionary. If given as 
 a dictionary, each entry will have a string key and string value. The key would 
 be the name of the network (in lower case) and the value would be the hostname 
-to use when on that network. One of the keys should be 'default', which is used 
-if the network does not match one of the given networks. For example::
+or IP address to use when on that network. One of the keys should be 'default', 
+which is used if the network does not match one of the given networks. For 
+example::
 
    class Home(HostEntry):
        hostname = {
@@ -449,7 +449,7 @@ forwarding will produce a series of error messages indicating that the ports are
 in use and so cannot be forwarded. Instead, you should only use the tunneling 
 version once when you want to set up the port forwards, and you the base entry 
 at all other times. Often forwarding connections are setup to run in the 
-background ass follows::
+background as follows::
 
    ssh -f -N home-tun
 
@@ -495,8 +495,8 @@ perspective of the remote ssh server) and the local host name.  For example::
 This allows a local VNC client viewing display 1 to show the VNC server running 
 on display 12 of the SSH server host.
 
-If you give a single number, it will make both display numbers.  If you don't 
-give a name, it will use *localhost* as the remote host (in this case 
+If you give a single number, it will use it for both display numbers.  If you 
+don't give a name, it will use *localhost* as the remote host (in this case 
 *localhost* represents the remote ssh server).  So the above VNC section to the 
 local forwards could be shortened to::
 
@@ -556,6 +556,7 @@ On a foreign network it produces::
        localForward 14190 localhost:4190
            # Mail - Sieve
        localForward 19100 localhost:9100
+           # Printer
        localForward 5901 localhost:5912
            # VNC
        dynamicForward 9999
@@ -726,7 +727,7 @@ When at work, you should generate your ssh config file using::
 
 or::
 
-   gensshconfig --Pwork
+   gensshconfig --Pwork_proxy
 
 You can get a list of these pre-configured proxies using::
 
