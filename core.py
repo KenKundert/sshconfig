@@ -186,9 +186,7 @@ class Hosts():
                 elif DEFAULT_NETWORK_NAME in hostnames:
                     hostname = hostnames[DEFAULT_NETWORK_NAME]
                 else:
-                    exit("%s: missing '%s' hostname." % (
-                        name, DEFAULT_NETWORK_NAME
-                    ))
+                    return
                 attribute = key, hostname, desc
             else:
                 hostnames = {}

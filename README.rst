@@ -339,7 +339,7 @@ Hostname
 The hostname may be a simple string, or it may be a dictionary. If given as 
 a dictionary, each entry will have a string key and string value. The key would 
 be the name of the network (in lower case) and the value would be the hostname 
-or IP address to use when on that network. One of the keys should be 'default', 
+or IP address to use when on that network. One of the keys may be 'default', 
 which is used if the network does not match one of the given networks. For 
 example::
 
@@ -361,6 +361,8 @@ When not on the home network, it results in an ssh host description of::
        hostname 74.125.232.64
        forwardAgent no
 
+The ssh config file entry for this host will not be generated if not on one of 
+the specified networks and if default is not specified.
 
 Location
 ''''''''
