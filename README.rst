@@ -183,11 +183,13 @@ ports:
 proxy:
    The name of the proxy to use by default when this network is active.
 
-PREFERRED_NETWORKS specifies a list of preferred networks. If multiple networks 
-are available (such as when you are connected with a wired network connection 
-but did not turn off your wireless networking on your laptop) then SSH is 
-configured for the first network on the PREFERRED_NETWORKS list that is 
-available.
+PREFERRED_NETWORKS specifies a list of preferred networks. It is useful your 
+computer can access multiple networks simultaneously, such as when you are using 
+a laptop connected to a wired network but you did not turn off the wireless 
+networking.  SSH is configured for the first network on the PREFERRED_NETWORKS 
+list that is available. If none of the preferred networks are available, then an 
+available known network is chosen at random. If no known networks are available, 
+SSH is configured for a generic network.
 
 CONFIG_FILE specifies the name of the ssh config file; the default is 
 ~/.ssh/config. The path to the SSH config file should be an absolute path.
