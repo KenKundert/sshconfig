@@ -2,8 +2,23 @@
 # Utilities for ssh config file generator
 #
 
+# Globals {{{1
 _KEYS_TO_INHERIT = ['user', 'identityFile']
 
+# Utilities {{{1
+# gethostname {{{2
+# returns short version of the hostname (the hostname without any domain name)
+import socket
+def gethostname():
+    return socket.gethostname().split('.')[0]
+
+# getusername {{{2
+import getpass
+def getusername():
+    return getpass.getuser()
+
+# VNC {{{2
+# Generates forwards for VNC
 def VNC(
     dispNum=0,
     rmtHost='localhost',
@@ -18,7 +33,8 @@ def VNC(
     lclHost = lclHost + ':' if lclHost else ''
     return "%s%d %s:%d" % (lclHost, 5900+lclDispNum, rmtHost, 5900+rmtDispNum)
 
-# Used to describe an available host
+# NetworkEntry class {{{1
+# Used to describe a known network
 class NetworkEntry():
     routers = []
     ports = None
@@ -58,6 +74,7 @@ class NetworkEntry():
                 return sub.__dict__.get(fieldname)
         return None
 
+# HostEntry class {{{1
 # Used to describe an available host
 class HostEntry():
     def __init__(self):
@@ -111,6 +128,7 @@ class HostEntry():
 
         return fields
 
+# Ports class {{{1
 # Used when selecting which port to use when several are available
 class Ports():
     def __init__(self):
@@ -135,6 +153,7 @@ class Ports():
 
 ports = Ports()
 
+# Locations class {{{1
 # Used when selecting hostname as a function of current location
 class Locations():
     def __init__(self):

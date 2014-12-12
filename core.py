@@ -1,7 +1,9 @@
 # Core Internal Classes for SSHConfig
 
 from sshconfig import NetworkEntry, locations
-from fileutils import expandPath, makePath, normPath, getHead, Execute, ExecuteError
+from fileutils import (
+    expandPath, makePath, normPath, getHead, Execute, ExecuteError
+)
 import os
 
 DEFAULT_NETWORK_NAME = 'default'
@@ -297,7 +299,7 @@ class Hosts():
 
 # Identify Network {{{1
 # Identifies which network we are on based on contents of /proc/net/arp
-def identifyNetwork():
+def identifyNetwork(preferred):
     unrecognized = 'generic', None
     try:
         arp = Execute(['/sbin/arp', '-a', '-n'])
@@ -309,14 +311,29 @@ def identifyNetwork():
     arpTable = arp.stdout.strip().split('\n')
     #arpTable = open('/proc/net/arp').readlines()
 
+    macs = []
     for row in arpTable:
         #gateway, hwtype, flags, mac, mask, interface = row.split()
         try:
             ignore, gateway, ignore, mac, hwtype, ignore, iface = row.split()
+            macs.append(mac)
         except ValueError:
             continue
-        for network in NetworkEntry.all_networks():
-            name = network.name()
+
+    def choose(networks, preferred):
+        # First offer the preferred networks, in order
+        preferred = [name.lower() for name in preferred]
+        for name in preferred:
+            if name in networks:
+                yield networks[name]
+        # Offer the remaining networks in arbitrary order
+        for name, network in networks.items():
+            if name not in preferred:
+                yield network
+
+    networks = {n.name():n for n in NetworkEntry.all_networks()}
+    for network in choose(networks, preferred):
+        for mac in macs:
             if mac in network.routers:
                 # We are on a known network
                 if network.ports:
@@ -324,6 +341,7 @@ def identifyNetwork():
                 if network.location:
                     locations.set_location(network.location)
                 return network.name(), network.proxy
+
     return unrecognized
 
 # checkForward{{{1

@@ -47,6 +47,11 @@ except ImportError:
     DEFAULTS = ''
 
 try:
+    from config import PREFERRED_NETWORKS
+except ImportError:
+    PREFERRED_NETWORKS = []
+
+try:
     from config import PROXIES
 except ImportError:
     PROXIES = {}
@@ -57,7 +62,7 @@ except ImportError:
     LOCATIONS = {}
 
 # Identify the configuration to be used
-network, proxy = identifyNetwork()
+network, proxy = identifyNetwork(PREFERRED_NETWORKS)
 networks = [each.name() for each in NetworkEntry.all_networks()]
 
 # Read command line 

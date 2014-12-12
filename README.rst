@@ -107,6 +107,9 @@ A typical config.py file would start with would look like::
    class Work(NetworkEntry):
        routers = ['f0:90:76:9c:b1:37']   # Router MAC addresses
 
+   class WorkWireless(NetworkEntry):
+       routers = ['8b:38:10:3c:1e:fe']   # Router MAC addresses
+
    class Library(NetworkEntry):
        # Blocks port 22
        routers = [
@@ -116,6 +119,10 @@ A typical config.py file would start with would look like::
            '00:15:c7:01:a7:00',  # Ethernet
        ]
        ports = [80, 443]
+
+   # Preferred networks, in order. If one of these networks are not available,
+   # another will be chosen at random.
+   PREFERRED_NETWORKS = ['Work']
 
    # Location of output file (must be an absolute path)
    CONFIG_FILE = "~/.ssh/config"
@@ -175,6 +182,12 @@ ports:
 
 proxy:
    The name of the proxy to use by default when this network is active.
+
+PREFERRED_NETWORKS specifies a list of preferred networks. If multiple networks 
+are available (such as when you are connected with a wired network connection 
+but did not turn off your wireless networking on your laptop) then SSH is 
+configured for the first network on the PREFERRED_NETWORKS list that is 
+available.
 
 CONFIG_FILE specifies the name of the ssh config file; the default is 
 ~/.ssh/config. The path to the SSH config file should be an absolute path.
@@ -253,6 +266,22 @@ This results in the following entry in the ssh config file::
 When specifying the identityFile, you can either use an absolute or relative 
 path. The relative path will be relative to the directory that will contain the 
 ssh config file. Specifying identityFile results in identitiesOnly being added.
+
+SSHconfig provides two utility functions that you can use in your hosts file to 
+customize it based on either the hostname or username that are being used when 
+gensshconfig is run. They are gethostname() and getusername() and both can be 
+imported from sshconfig. For example, I generally use a different identity (ssh 
+key) from each machine I operate from. To implement this, at the top of my hosts 
+file I have::
+
+   from sshconfig import gethostname
+
+   class DigitalOcean(HostEntry):
+       description = "Web server"
+       aliases = ['do', 'web']
+       user = 'herbie'
+       hostname = '107.170.65.89'
+       identityFile = gethostname()
 
 
 Ports
