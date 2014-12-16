@@ -50,7 +50,7 @@ A very simple hosts.py file would look like this::
 
    from sshconfig import HostEntry
 
-   class zeebra(HostEntry):
+   class Zeebra(HostEntry):
        user = 'herbie'
        hostname = 'zeebra.he.net'
 
@@ -76,8 +76,9 @@ The above hosts.py file is converted into the following ssh config file::
        forwardAgent no
 
 The transformation between a host entry in the hosts.py file and the ssh config 
-file is affected by the network you are on and any command line options that are 
-specified to gensshconfig.
+file could be affected by the network you are on and any command line options 
+that are specified to gensshconfig, but in this case it is not. Notice that the 
+class name is converted to lower case when creating the hostname.
 
 Configuration
 -------------
@@ -121,7 +122,7 @@ A typical config.py file would start with would look like::
        ports = [80, 443]
 
    # Preferred networks, in order. If one of these networks are not available,
-   # another will be chosen at random.
+   # another will be chosen at random from the available networks.
    PREFERRED_NETWORKS = ['Work']
 
    # Location of output file (must be an absolute path)
@@ -189,7 +190,10 @@ a laptop connected to a wired network but you did not turn off the wireless
 networking.  SSH is configured for the first network on the PREFERRED_NETWORKS 
 list that is available. If none of the preferred networks are available, then an 
 available known network is chosen at random. If no known networks are available, 
-SSH is configured for a generic network.
+SSH is configured for a generic network. In the example, the *Work* network is 
+listed in the preferred networks because *Work* and *WorkWireless* would 
+expected to often be available simultaneously, and *Work* is the wired network 
+and is considerably faster than *WorkWireless*.
 
 CONFIG_FILE specifies the name of the ssh config file; the default is 
 ~/.ssh/config. The path to the SSH config file should be an absolute path.
@@ -332,7 +336,7 @@ In this next example, we customize the proxy command based on the port chosen::
        user = 'herbie'
        hostname = {
            'home': '192.168.1.32',
-           'default': '173.11.122.57'
+           'default': '231.91.164.05'
        }
        port = ports.choose([22, 80])
        if port in [80]:
@@ -342,7 +346,8 @@ In this next example, we customize the proxy command based on the port chosen::
 
 An entry such as this would be used if sshd is configured to directly accept 
 traffic on port 22, and Apache is configured to act as a proxy for ssh on ports 
-80 and 443.
+80 and 443 (see `SSH via HTTP 
+<http://www.nurdletech.com/linux-notes/ssh/via-http.html>`.
 
 If you prefer, you can use proxytunnel rather than socat in the proxy command::
 
@@ -553,12 +558,12 @@ An example of many of these features::
        if port in [80]:
            proxyCommand = 'socat - PROXY:%h:127.0.0.1:22,proxyport=%p'
        trusted = True
-       identityFile = 'my2014key'
+       identityFile = gethostname()
        localForward = [
-           ('11025 localhost:25',  "Mail - SMTP"),
-           ('11143 localhost:143', "Mail - IMAP"),
-           ('14190 localhost:4190', "Mail - Seive"),
-           ('19100 localhost:9100', "Printer"),
+           ('30025 localhost:25',  "Mail - SMTP"),
+           ('30143 localhost:143', "Mail - IMAP"),
+           ('34190 localhost:4190', "Mail - Seive"),
+           ('39100 localhost:9100', "Printer"),
            (VNC(lclDispNum=1, rmtDispNum=12), "VNC"),
        ]
        dynamicForward = 9999
@@ -570,7 +575,7 @@ On a foreign network it produces::
        user herbie
        hostname 74.125.232.64
        port = 22
-       identityFile /home/herbie/.ssh/my2014key
+       identityFile /home/herbie/.ssh/teneya
        identitiesOnly yes
        forwardAgent yes
 
@@ -579,7 +584,7 @@ On a foreign network it produces::
        user herbie
        hostname 74.125.232.64
        port = 22
-       identityFile /home/herbie/.ssh/my2014key
+       identityFile /home/herbie/.ssh/teneya
        identitiesOnly yes
        forwardAgent yes
        localForward 11025 localhost:25
@@ -609,11 +614,11 @@ For example::
 
    class Farm(HostEntry):
        description = "Entry Host to Machine farm"
-       aliases = ['earch']
+       aliases = ['earth']
        user = 'herbie'
        hostname = {
            'work': '192.168.1.16',
-           'default': '173.11.122.58'
+           'default': '231.91.164.92'
        }
        trusted = True
        identityFile = 'my2014key'
@@ -633,7 +638,7 @@ On a foreign network produces::
    # Entry Host to Machine Farm
    host farm earth
        user herbie
-       hostname 173.11.122.58
+       hostname 231.91.164.92
        identityFile /home/herbie/.ssh/my2014key
        identitiesOnly yes
        forwardAgent yes
@@ -641,7 +646,7 @@ On a foreign network produces::
    # Entry Host to Machine Farm (with forwards)
    host farm-tun earth-tun
        user herbie
-       hostname 173.11.122.58
+       hostname 231.91.164.92
        identityFile /home/herbie/.ssh/my2014key
        identitiesOnly yes
        forwardAgent yes
@@ -683,7 +688,7 @@ On a foreign network produces::
 Subclassing
 '''''''''''
 
-Subclassing is similar to guests, but it gives more control over how the 
+Subclassing is an alternative to guests that gives more control over how the 
 attributes are set. When you create a host that is a subclass of another host 
 (the parent), the parent is configured to be the proxy and only the 'user' and 
 'identityFile' attributes are copied over from the parent, but these can be 
@@ -817,7 +822,7 @@ one that is (Farm)::
        user = 'herbie'
        hostname = {
            'work': '192.168.1.16',
-           'default': '173.11.122.58'
+           'default': '231.91.164.92'
        }
 
 When on the work network, when you connect to Home you will use the proxy and 
