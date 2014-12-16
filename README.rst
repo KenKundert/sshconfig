@@ -439,26 +439,26 @@ For example::
        user = 'kundert'
        hostname = locations.choose(
           locations = {
-              'sf': ("65.19.130.60", "Fremont, CA, US (fremont.tunnelr.com)"),
-              'la': ("173.234.163.226", "Los Angeles, CA, US (la.tunnelr.com)"),
-              'wa': ("209.160.33.99", "Seattle, WA, US (seattle.tunnelr.com)"),
-              'tx': ("64.120.56.66", "Dallas, TX, US (dallas.tunnelr.com)"),
-              'va': ("209.160.73.168", "McLean, VA, US (mclean.tunnelr.com)"),
-              'nj': ("66.228.47.107", "Newark, NJ, US (newark.tunnelr.com)"),
-              'ny': ("174.34.169.98", "New York City, NY, US (nyc.tunnelr.com)"),
-              'london': ("109.74.200.165", "London, UK (london.tunnelr.com)"),
-              'uk': ("31.193.133.168", "Maidenhead, UK (maidenhead.tunnelr.com)"),
-              'switzerland': ("178.209.52.219", "Zurich, Switzerland (zurich.tunnelr.com)"),
-              'sweden': ("46.246.93.78", "Stockholm, Sweden (stockholm.tunnelr.com)"),
-              'spain': ("37.235.53.245", "Madrid, Spain (madrid.tunnelr.com)"),
-              'netherlands': ("89.188.9.54", "Groningen, Netherlands (groningen.tunnelr.com)"),
-              'germany': ("176.9.242.124", "Falkenstein, Germany (falkenstein.tunnelr.com)"),
-              'france': ("158.255.215.77", "Paris, France (paris.tunnelr.com)"),
+              'sf':          ("65.19.130.60",    "Fremont, CA, US (fremont.tunnelr.com)"),
+              'la':          ("173.234.163.226", "Los Angeles, CA, US (la.tunnelr.com)"),
+              'wa':          ("209.160.33.99",   "Seattle, WA, US (seattle.tunnelr.com)"),
+              'tx':          ("64.120.56.66",    "Dallas, TX, US (dallas.tunnelr.com)"),
+              'va':          ("209.160.73.168",  "McLean, VA, US (mclean.tunnelr.com)"),
+              'nj':          ("66.228.47.107",   "Newark, NJ, US (newark.tunnelr.com)"),
+              'ny':          ("174.34.169.98",   "New York City, NY, US (nyc.tunnelr.com)"),
+              'london':      ("109.74.200.165",  "London, UK (london.tunnelr.com)"),
+              'uk':          ("31.193.133.168",  "Maidenhead, UK (maidenhead.tunnelr.com)"),
+              'switzerland': ("178.209.52.219",  "Zurich, Switzerland (zurich.tunnelr.com)"),
+              'sweden':      ("46.246.93.78",    "Stockholm, Sweden (stockholm.tunnelr.com)"),
+              'spain':       ("37.235.53.245",   "Madrid, Spain (madrid.tunnelr.com)"),
+              'netherlands': ("89.188.9.54",     "Groningen, Netherlands (groningen.tunnelr.com)"),
+              'germany':     ("176.9.242.124",   "Falkenstein, Germany (falkenstein.tunnelr.com)"),
+              'france':      ("158.255.215.77",  "Paris, France (paris.tunnelr.com)"),
           },
           maps={
-              'home': 'sf',
+              'home':       'sf',
               'washington': 'va',
-              'toulouse': 'france',
+              'toulouse':   'france',
           },
           default='sf'
        )
@@ -746,7 +746,7 @@ you would like to use a proxy, you use the --proxy (or -P) command line argument
 to specify the proxy by name. For example::
 
    PROXIES = {
-       'work_proxy': 'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
+       'work_proxy':   'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
        'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
    }
 
@@ -755,7 +755,7 @@ firewall and the second does the same for the school's firewall. If preferred,
 you can use socat rather than proxytunnel to accomplish the same thing::
 
    PROXIES = {
-       'work_proxy': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
+       'work_proxy':   'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
        'school_proxy': 'socat - PROXY:sproxy.fna.learning.edu:%h:%p,proxyport=1080',
    }
 
