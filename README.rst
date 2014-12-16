@@ -467,13 +467,13 @@ For example::
        ])
        identityFile = 'tunnelr'
 
-Now if the user specifies --location=washington, then it will mapped to the host 
-location of va, which becomes mclean.tunnelr.com (209.160.73.168). Normally, 
-users are expected to choose a location from the list given in LOCATIONS. As 
-such, every maps argument should support each of those locations. However, 
-a user may given any location they wish. If the location given is not found in 
-maps, then it will be looked for in locations, and if it is not in locations, 
-the default location is used.
+Now if the user specifies --location=washington on the command line, then it is 
+mapped to the host location of va, which becomes mclean.tunnelr.com 
+(209.160.73.168).  Normally, users are expected to choose a location from the 
+list given in LOCATIONS. As such, every maps argument should support each of 
+those locations.  However, a user may given any location they wish. If the 
+location given is not found in maps, then it will be looked for in locations, 
+and if it is not in locations, the default location is used.
 
 
 Forwards
