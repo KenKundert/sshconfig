@@ -85,7 +85,8 @@ Configuration
 
 The configuration of sshconfig involves two files, config.py and hosts.py.  In 
 config.py you describe networks, proxies, locations, and general defaults. In 
-hosts.py, you describe your host entries.
+hosts.py, you describe the machines you would like to connect to on a regular 
+basis.
 
 Config
 ''''''
@@ -178,7 +179,7 @@ location:
    when this network is active.
 
 ports:
-   The default list of ports that should be available when this location is 
+   The default list of ports that should be available when this network is 
    active.
 
 proxy:
@@ -570,7 +571,7 @@ An example of many of these features::
 
 On a foreign network it produces::
 
-   # Lucifer
+   # Lucifer Home Server
    host home lucifer
        user herbie
        hostname 74.125.232.64
@@ -579,7 +580,7 @@ On a foreign network it produces::
        identitiesOnly yes
        forwardAgent yes
 
-   # Lucifer (with forwards)
+   # Lucifer Home Server (with forwards)
    host home-tun lucifer-tun
        user herbie
        hostname 74.125.232.64
@@ -657,7 +658,7 @@ On a foreign network produces::
        localForward 5923 neptune:5923
            # VNC on Neptune
 
-   # 128GB Computer Server
+   # 128GB Compute Server
    host farm-jupiter
        hostname jupiter
        proxyCommand ssh host -W %h:%p
@@ -666,7 +667,7 @@ On a foreign network produces::
        identitiesOnly yes
        forwardAgent yes
 
-   # 96GB Computer Server
+   # 96GB Compute Server
    host farm-saturn
        hostname saturn
        proxyCommand ssh host -W %h:%p
@@ -675,7 +676,7 @@ On a foreign network produces::
        identitiesOnly yes
        forwardAgent yes
 
-   # 64GB Computer Server
+   # 64GB Compute Server
    host farm-netpune
        hostname neptune
        proxyCommand ssh host -W %h:%p
@@ -767,7 +768,7 @@ or::
 
    gensshconfig --Pwork_proxy
 
-You can get a list of these pre-configured proxies using::
+You can get a list of the pre-configured proxies using::
 
    gensshconfig --available
 

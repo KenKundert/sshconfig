@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set supportedPythonVersions=(3.3)
+set supportedPythonVersions=(3)
 set packageName=sshconfig
 
 rm -f install.out
