@@ -111,8 +111,7 @@ class Hosts():
         self.config_file = config_file
         self.hosts = []
 
-    def _append(
-            self, name, fields, aliases=None, desc=None, guests=None):
+    def _append(self, name, fields, aliases=None, desc=None, guests=None):
         # process primary host
         names = ' '.join([name] + (aliases if aliases else []))
         if desc:
