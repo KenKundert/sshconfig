@@ -1,6 +1,23 @@
 SSH Config
 ==========
 
+Installation Requirements
+-------------------------
+
+Uses docopt::
+
+   yum install python-docopt  (or python3-docopt)
+
+or::
+
+   pip install docopt
+
+Also requires my scripts package::
+
+   git clone https://github.com/KenKundert/scripts.git
+   cd scripts
+   ./install
+
 
 Introduction
 ------------
