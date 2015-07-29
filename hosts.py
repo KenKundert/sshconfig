@@ -2,8 +2,7 @@
 # SSH Hosts
 #
 
-from sshconfig import HostEntry, VNC, ports, locations
-from socket import gethostname
+from sshconfig import HostEntry, VNC, ports, locations, gethostname
 
 # Lucifer {{{1
 class Home(HostEntry):
@@ -47,7 +46,7 @@ class Work(HostEntry):
 
 class Mail(Work):
     aliases = ['venus']
-    description = "Designer's Guide mail server"
+    description = "mail server"
 
 # Farm {{{1
 class Farm(HostEntry):
