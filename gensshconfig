@@ -24,7 +24,8 @@ Normally the network is determined automatically and need not be specified.
 
 from sshconfig import NetworkEntry, HostEntry, ports, locations
 from core import Hosts, identifyNetwork
-from fileutils import expandPath
+from scripts import join, script_prefs
+script_prefs(expanduser=True, exit_upon_error=True)
 from docopt import docopt
 from textwrap import dedent, indent
 import time
@@ -111,7 +112,7 @@ print(' '.join(desc))
 import hosts as unneeded
 
 # Get path to config file
-config_file = expandPath(CONFIG_FILE)
+config_file = join(CONFIG_FILE)
 if not os.path.isabs(config_file):
     print("CONFIG_FILE (in config.py) should be given an absolute path.")
 

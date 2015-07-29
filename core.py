@@ -1,9 +1,7 @@
 # Core Internal Classes for SSHConfig
 
 from sshconfig import NetworkEntry, locations
-from fileutils import (
-    expandPath, makePath, normPath, getHead, Execute, ExecuteError
-)
+from scripts import join, normpath, head, Run, ScriptError
 import os
 
 DEFAULT_NETWORK_NAME = 'default'
@@ -209,9 +207,9 @@ class Hosts():
         attribute = attributes.get('identityFile')
         if attribute:
             key, value, desc = attribute
-            filename = expandPath(value)
+            filename = join(value)
             if not os.path.isabs(filename):
-                filename = normPath(makePath(getHead(self.config_file), filename))
+                filename = normpath(join(head(self.config_file), filename))
             attribute = key, filename, desc
             fields.append(attribute)
             fields.append(('identitiesOnly', 'yes', None))
@@ -301,8 +299,8 @@ class Hosts():
 def identifyNetwork(preferred):
     unrecognized = 'generic', None
     try:
-        arp = Execute(['/sbin/arp', '-a', '-n'])
-    except ExecuteError as error:
+        arp = Run(['/sbin/arp', '-a', '-n'], 'sOeW')
+    except ScriptError as error:
         print(str(error))
         return unrecognized
     if arp.status:
