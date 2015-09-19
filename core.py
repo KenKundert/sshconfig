@@ -337,6 +337,14 @@ def identifyNetwork(preferred):
                     ports.available(network.ports)
                 if network.location:
                     locations.set_location(network.location)
+                if network.init_script:
+                    script = Run(network.init_script, 'soew')
+                    try:
+                        script.wait()
+                    except ScriptError as error:
+                        print("%s network init_script failed (ignored): '%s'" % (
+                            network.name(), str(script)
+                        ))
                 return network.name(), network.proxy
 
     return unrecognized

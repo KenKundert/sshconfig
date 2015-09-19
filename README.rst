@@ -138,6 +138,7 @@ A typical config.py file would start with would look like::
            '00:15:c7:01:a7:00',  # Ethernet
        ]
        ports = [80, 443]
+       init_script = 'activate_library_network'
 
    # Preferred networks, in order. If one of these networks are not available,
    # another will be chosen at random from the available networks.
@@ -198,6 +199,10 @@ location:
 ports:
    The default list of ports that should be available when this network is 
    active.
+
+init_script:
+   A script that should be run when on this network. May be a string or a list 
+   of strings.
 
 proxy:
    The name of the proxy to use by default when this network is active.

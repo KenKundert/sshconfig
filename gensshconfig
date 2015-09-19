@@ -25,7 +25,7 @@ Normally the network is determined automatically and need not be specified.
 from sshconfig import NetworkEntry, HostEntry, ports, locations
 from core import Hosts, identifyNetwork
 from scripts import join, script_prefs
-script_prefs(expanduser=True, exit_upon_error=True)
+script_prefs(expanduser=True, exit_upon_error=False)
 from docopt import docopt
 from textwrap import dedent, indent
 import time
