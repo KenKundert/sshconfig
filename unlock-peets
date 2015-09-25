@@ -1,0 +1,53 @@
+#!/usr/bin/env python2
+#
+# Unlock Peet's WiFi
+#
+# Peet's has an annoying click through that forces you to accept the terms and
+# conditions. This program uses mechanize to automate this process.
+
+from __future__ import print_function
+from mechanize import Browser, BrowserStateError, LinkNotFoundError
+    # mechanize is not yet available for python3
+import sys
+
+
+# This url should return a single digit, making it easy to determine whether we
+# have network access to the open internet.
+test_url = 'https://www.random.org/integers/?' + '&'.join([
+    'num=1',        # request one number chosen at random
+    'min=0',        # minimum value is 0
+    'max=9',        # maximum value is 9
+    'col=1',        # format into 1 column
+    'base=10',      # uses base 10
+    'format=plain', # just return the number
+    'rnd=new',      # no seed
+])
+
+# Activate mechanize 
+browser = Browser()
+browser.set_handle_robots(False)
+
+# Determine whether network is already unlocked
+resp = browser.open(test_url)
+if resp.get_data().strip().isdigit():
+    # Got an number, that implies internet is already available
+    print("Peet's wifi is already unlocked.")
+    sys.exit()
+
+try:
+    # The response we got should be a redirect page from Peet's router
+    # Read the redirect URL from the Library's response, pick out the redirect
+    # link, and follow it.
+    links = list(browser.links(url_regex='.*continue_url.*'))
+    print('LINKS1', links)
+    assert len(links) == 1
+    resp = browser.follow_link(links[0])
+
+    # Now we be at the terms & conditions, find the accept link and follow it.
+    links = list(browser.links(url_regex='.*continue_url.*'))
+    print('LINKS2', links)
+    assert len(links) == 1
+    resp = browser.follow_link(links[0])
+except (AssertionError, BrowserStateError, LinkNotFoundError):
+    print('Whoops, something is wrong. Cannot find redirect in:') 
+    print(resp.get_data())

@@ -113,8 +113,8 @@ A typical config.py file would start with would look like::
    # SSH Config -- Basic Network Configuration
    #
    # Defines known networks. Recognizes networks by the MAC addresses of their 
-   # routers, can use this information to set default location, ports, and 
-   # proxy.
+   # routers, can use this information to set default location, ports, init 
+   # script and proxy.
    #
 
    from sshconfig import NetworkEntry
@@ -122,12 +122,15 @@ A typical config.py file would start with would look like::
    # Characteristics of the known networks
    class Home(NetworkEntry):
        routers = ['a8:93:14:8a:e4:31']   # Router MAC addresses
+       location = 'home'
 
    class Work(NetworkEntry):
        routers = ['f0:90:76:9c:b1:37']   # Router MAC addresses
+       location = 'home'
 
    class WorkWireless(NetworkEntry):
        routers = ['8b:38:10:3c:1e:fe']   # Router MAC addresses
+       location = 'home'
 
    class Library(NetworkEntry):
        # Blocks port 22
@@ -138,7 +141,13 @@ A typical config.py file would start with would look like::
            '00:15:c7:01:a7:00',  # Ethernet
        ]
        ports = [80, 443]
+       location = 'home'
        init_script = 'activate_library_network'
+
+   class DC_Peets(NetworkEntry):
+       routers = ['e4:15:c4:01:1e:95']  # Wireless
+       location = 'washington'
+       init_script = 'unlock-peets'
 
    # Preferred networks, in order. If one of these networks are not available,
    # another will be chosen at random from the available networks.
@@ -202,7 +211,12 @@ ports:
 
 init_script:
    A script that should be run when on this network. May be a string or a list 
-   of strings.
+   of strings. If it is a list of strings they are joined together to form 
+   a command. The unlock-peets script is included as an example of such 
+   a script. It is used to automate the process of accepting the terms 
+   & conditions on the click-through page. Unfortunately, while unlock-peets 
+   represents a reasonable example, each organization requires the basic script 
+   to be customized to fit their particular click-through pages.
 
 proxy:
    The name of the proxy to use by default when this network is active.
