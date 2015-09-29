@@ -212,12 +212,48 @@ ports:
 init_script:
    A script that should be run when on this network. May be a string or a list 
    of strings. If it is a list of strings they are joined together to form 
-   a command. The unlock-peets script is included as an example of such 
-   a script. It is used to automate the process of accepting the terms 
-   & conditions on the click-through page. Unfortunately, while unlock-peets 
-   represents a reasonable example, each organization requires the basic script 
-   to be customized to fit their particular click-through pages.
+   a command.
 
+   The unlock-peets script is included as an example of such a script. It is 
+   used to automate the process of accepting the terms & conditions on the 
+   click-through page. Unfortunately, while unlock-peets represents a reasonable 
+   example, each organization requires the basic script to be customized to fit 
+   their particular click-through pages.
+
+   To write a script it is helpful to understand how the unlocking process 
+   works.  The organizations that lock their wifi generally allow your computer 
+   to directly connect to their access point, however their firewall is 
+   configured to block any network traffic from unapproved devices.  As you 
+   connect, they grab the MAC address of your computer's wifi.  They then watch 
+   for web requests emanating from your computer, which they then discard and 
+   redirect your browser to their router which offers up a page that allows you 
+   to accept their terms and conditions.  This page is customized particularly 
+   for you: it contains your MAC address. When you accept, your MAC address is 
+   returned to the router along with your acceptance, and the router then 
+   rewrites its firewall rules to allow your computer to access the internet.  
+   After some period of time (an hour? a day?) the rules are discarded and you 
+   loose your connection to the Internet.  All of this tremendously abuses 
+   Internet protocols, and causes its visitors headaches because this hack is 
+   not compatible with HTTPS or VPN traffic. So for it to work, you must request 
+   a plain HTTP site with any VPNs disabled, and plain HTTP sites are 
+   disappearing.  The headaches this cause seems to provide very little value to 
+   anyone. They break the Internet so as to force you to accept their terms and 
+   conditions, which they presumably feel protects them from lawsuits, but it is 
+   hard to imagine anybody suing the owner of a public wifi for the actions of 
+   an anonymous user. But I digress.
+
+   Debugging init scripts can be difficult because once you successfully unlock 
+   the wifi, it generally remains unlocked for at least an hour, and maybe until 
+   the next day, which limits your ability to test your script.  However, in 
+   Linux it is possible to change your MAC address.  If you do so, the router no 
+   longer recognizes you and you have to go through the unlock process again, 
+   which allows you to thoroughly exercise and debug your script.  To change 
+   your MAC address, right-click on the Network Manager applet, and select 'Edit 
+   Connection ...', select the connection you are using, and click 'Edit', then 
+   copy the 'Device MAC address' into 'Cloned MAC address' and change a few 
+   digits. The digits are hexadecimal, so choose values between 0-9A-F. Then 
+   click 'Save', 'Close', and restart your network connection.
+   
 proxy:
    The name of the proxy to use by default when this network is active.
 

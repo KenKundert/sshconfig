@@ -10,44 +10,39 @@ from mechanize import Browser, BrowserStateError, LinkNotFoundError
     # mechanize is not yet available for python3
 import sys
 
-
-# This url should return a single digit, making it easy to determine whether we
-# have network access to the open internet.
-test_url = 'https://www.random.org/integers/?' + '&'.join([
-    'num=1',        # request one number chosen at random
-    'min=0',        # minimum value is 0
-    'max=9',        # maximum value is 9
-    'col=1',        # format into 1 column
-    'base=10',      # uses base 10
-    'format=plain', # just return the number
-    'rnd=new',      # no seed
+# This url should return the country code of Mount Denali, which is 'US'.
+# This is one of any number of URLs that could be used for this purpose. We just
+# need one that does not employ SSL and has an easily recognizable result.
+test_url = 'http://api.geonames.org/countryCode?' + '&'.join([
+    'lat=63.069',        # latitude of Denali
+    'lng=-151.0',        # longitude of Denali
+    'username=transfix', # name of an account I created
 ])
 
-# Activate mechanize 
+# Activate mechanize
 browser = Browser()
 browser.set_handle_robots(False)
 
 # Determine whether network is already unlocked
 resp = browser.open(test_url)
-if resp.get_data().strip().isdigit():
-    # Got an number, that implies internet is already available
+if 'US' == resp.get_data().strip().upper():
+    # We received the expected result, this would only happen if the network was
+    # already unlocked.
     print("Peet's wifi is already unlocked.")
     sys.exit()
 
 try:
-    # The response we got should be a redirect page from Peet's router
-    # Read the redirect URL from the Library's response, pick out the redirect
-    # link, and follow it.
+    # We did not receive the result, meaning that we should have been redirected
+    # to the terms and conditions page, and we simply need to accept them.
+    # This is done by looking for the link that contains 'continue_url' and
+    # following it (clicking on it).
     links = list(browser.links(url_regex='.*continue_url.*'))
-    print('LINKS1', links)
     assert len(links) == 1
     resp = browser.follow_link(links[0])
+    assert resp.code == 200
 
-    # Now we be at the terms & conditions, find the accept link and follow it.
-    links = list(browser.links(url_regex='.*continue_url.*'))
-    print('LINKS2', links)
-    assert len(links) == 1
-    resp = browser.follow_link(links[0])
 except (AssertionError, BrowserStateError, LinkNotFoundError):
-    print('Whoops, something is wrong. Cannot find redirect in:') 
-    print(resp.get_data())
+    print('Whoops, something is wrong. Cannot find accept button. Response saved to resp.html.')
+    page = resp.get_data()
+    with open('resp.html', 'w') as f:
+        f.write(page)
