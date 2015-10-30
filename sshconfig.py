@@ -2,8 +2,12 @@
 # Utilities for ssh config file generator
 #
 
+# Imports {{{1
+import re
+
 # Globals {{{1
 _KEYS_TO_INHERIT = ['user', 'identityFile']
+LOWER_TO_UPPER_TRANSITION = re.compile(r'([a-z])([A-Z])')
 
 # Utilities {{{1
 # gethostname {{{2
@@ -36,6 +40,8 @@ def VNC(
 # NetworkEntry class {{{1
 # Used to describe a known network
 class NetworkEntry():
+    key = None         # succinct version of the name (optional)
+    description = None # descriptive version of the name (optional)
     routers = []
     ports = None
     location = None
@@ -46,14 +52,32 @@ class NetworkEntry():
 
     @classmethod
     def all_networks(cls):
-        for sub in cls.__subclasses__():
-            yield sub
-            for sub in sub.all_networks():
-                yield sub
+        # yields all known networks
+        for subclass in cls.__subclasses__():
+            yield subclass
+            for subclass in subclass.all_networks():
+                yield subclass
 
     @classmethod
     def name(cls):
-        return cls.__name__.lower()
+        return cls.key.lower() if cls.key else cls.__name__.lower()
+
+    @classmethod
+    def Name(cls):
+        return cls.key if cls.key else cls.__name__
+
+    @classmethod
+    def desc(cls):
+        if cls.description:
+            return cls.description
+        # Return formatted name
+        # '__' is converted to ' - ', so Library__MV becomes 'Library - MV'
+        # '_' is replaced by ' '
+        # space inserted upon lower case to upper case transitions
+        description = cls.__name__.replace('__', ' - ')
+        description = description.replace('_', ' ')
+        description = LOWER_TO_UPPER_TRANSITION.sub(r'\1 \2', description)
+        return description
 
     @classmethod
     def fields(cls):
@@ -68,11 +92,22 @@ class NetworkEntry():
         return fields
 
     @classmethod
-    def get_field(cls, clsname, fieldname):
-        for sub in cls.__subclasses__():
-            if sub.__name__.lower() == clsname:
-                return sub.__dict__.get(fieldname)
+    def find(cls, name):
+        name = name.lower()
+        for subclass in cls.__subclasses__():
+            if subclass.key and subclass.key.lower() == name:
+                return subclass
+            if subclass.__name__.lower() == name:
+                return subclass
         return None
+
+    @classmethod
+    def known(cls):
+        # yields the names associated with any known network
+        for subclass in cls.__subclasses__():
+            if subclass.key:
+                yield subclass.key.lower()
+            yield subclass.__name__.lower()
 
 # HostEntry class {{{1
 # Used to describe an available host
@@ -82,10 +117,10 @@ class HostEntry():
 
     @classmethod
     def all_hosts(cls):
-        for sub in cls.__subclasses__():
-            yield sub
-            for sub in sub.all_hosts():
-                yield sub
+        for subclass in sorted(cls.__subclasses__(), key=lambda s: s.__name__):
+            yield subclass
+            for subclass in subclass.all_hosts():
+                yield subclass
 
     @classmethod
     def name(cls):

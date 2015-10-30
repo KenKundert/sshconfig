@@ -23,7 +23,7 @@ Normally the network is determined automatically and need not be specified.
 """
 
 from sshconfig import NetworkEntry, HostEntry, ports, locations
-from core import Hosts, identifyNetwork
+from core import Hosts, identifyNetwork, initializeNetwork
 from scripts import join, script_prefs
 script_prefs(expanduser=True, exit_upon_error=False)
 from docopt import docopt
@@ -63,8 +63,7 @@ except ImportError:
     LOCATIONS = {}
 
 # Identify the configuration to be used
-network, proxy = identifyNetwork(PREFERRED_NETWORKS)
-networks = [each.name() for each in NetworkEntry.all_networks()]
+networkName = identifyNetwork(PREFERRED_NETWORKS)
 
 # Read command line 
 options = docopt(__doc__)
@@ -73,13 +72,33 @@ if options['--available']:
         'Foreign proxies (you can also use ssh hosts as proxies):\n    '
       + '\n    '.join(sorted(PROXIES.keys()))
     )
-    print('Known locations:\n    ' + '\n    '.join(sorted(LOCATIONS)))
-    print('Networks:\n    ' + '\n    '.join(sorted(networks)))
+    print('Locations')
+    for each in sorted(LOCATIONS):
+        if LOCATIONS[each]:
+            print('    %s - %s' % (each, LOCATIONS[each]))
+        else:
+            print('    %s' % each)
+    print('Networks:')
+    for each in sorted(NetworkEntry.all_networks(), key=lambda n: n.name()):
+        desc = each.desc()
+        if desc:
+            print('    %s - %s' % (each.name(), desc))
+        else:
+            print('    %s' % each.name())
     exit()
 
 # Apply command line options (they override any chosen by network)
-network = options['--network'] if options['--network'] else network
-proxy = options['--proxy'] if options['--proxy'] else proxy
+networkName = options['--network'] if options['--network'] else networkName
+network = NetworkEntry.find(networkName)
+if network:
+    initializeNetwork(network)
+    proxy = network.proxy
+    networkDesc = network.desc()
+else:
+    proxy = None
+    networkDesc = 'Unknown network'
+if options['--proxy']:
+    proxy = options['--proxy']
 if options['--ports']:
     ports.available(options['--ports'])
 if options['--location']:
@@ -92,9 +111,11 @@ if unknown:
     print('    ' + '\n    '.join(sorted(unknown)))
 
 # Get description of this situation
-desc = ['%s network' % network]
+desc = [network.Name(), 'network']
+if networkDesc:
+    desc += ['(%s)' % networkDesc]
 if locations.my_location:
-    desc.append('located in %s' % locations.my_location)
+    desc.append('located in %s' % LOCATIONS[locations.my_location])
 if ports.available_ports:
     desc.append(
         'using port%s %s' % (
@@ -105,7 +126,7 @@ if ports.available_ports:
 if proxy:
     desc.append('proxying through %s' % proxy)
 #print("Configuring ssh for %s." % (' '.join(desc)))
-print(' '.join(desc))
+print(' '.join(desc) + '.')
 
 # Import the hosts
 # This must be done only after the port, location, and proxy choices are made.
@@ -117,7 +138,7 @@ if not os.path.isabs(config_file):
     print("CONFIG_FILE (in config.py) should be given an absolute path.")
 
 # Process each host
-hosts = Hosts(network, networks, proxy, PROXIES, config_file)
+hosts = Hosts(networkName, proxy, PROXIES, config_file)
 for each in HostEntry.all_hosts():
     hosts.process(each, forwards = False)
     hosts.process(each, forwards = True)
@@ -129,7 +150,7 @@ body = []
 suffix = []
 
 # Output header
-header.append('# SSH Configuration for %s network.' % network)
+header.append('# SSH Configuration for %s network.' % network.Name())
 header.append(time.strftime("# Generated at %-I:%M %p on %d %B %Y."))
 header.append(dedent('''\
     #

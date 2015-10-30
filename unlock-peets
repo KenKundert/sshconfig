@@ -40,6 +40,7 @@ try:
     assert len(links) == 1
     resp = browser.follow_link(links[0])
     assert resp.code == 200
+    print("Peet's wifi successfully unlocked.")
 
 except (AssertionError, BrowserStateError, LinkNotFoundError):
     print('Whoops, something is wrong. Cannot find accept button. Response saved to resp.html.')

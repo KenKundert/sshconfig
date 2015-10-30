@@ -101,9 +101,8 @@ class Attributes():
 
 # Hosts Class {{{1
 class Hosts():
-    def __init__(self, network, networks, proxy, proxies, config_file):
+    def __init__(self, network, proxy, proxies, config_file):
         self.network = network
-        self.networks = set(networks + [DEFAULT_NETWORK_NAME])
         self.proxy = proxy
         self.proxies = proxies
         self.config_file = config_file
@@ -175,7 +174,10 @@ class Hosts():
         if attribute:
             key, hostnames, desc = attribute
             if isinstance(hostnames, dict):
-                unknown_networks = set(hostnames.keys()) - self.networks
+                unknown_networks = (
+                    set(hostnames.keys()) 
+                  - set(list(NetworkEntry.known()) + [DEFAULT_NETWORK_NAME])
+                )
                 if unknown_networks:
                     print('%s: uses unknown networks: %s' % (
                         name, ', '.join(sorted(unknown_networks))
@@ -257,7 +259,7 @@ class Hosts():
         elif (
             self.proxy and not (
                 self.proxy == entry.__name__.lower() or (
-                    (self.proxy == NetworkEntry.get_field(self.network, 'proxy'))
+                    (self.proxy == NetworkEntry.find(self.network).proxy)
                     and (self.network in hostnames)
                 )
             )
@@ -297,7 +299,6 @@ class Hosts():
 # Identify Network {{{1
 # Identifies which network we are on based on contents of /proc/net/arp
 def identifyNetwork(preferred):
-    unrecognized = 'generic', None
     try:
         arp = Run(['/sbin/arp', '-a', '-n'], 'sOeW')
     except ScriptError as error:
@@ -317,39 +318,40 @@ def identifyNetwork(preferred):
         except ValueError:
             continue
 
-    def choose(networks, preferred):
+    def choose(preferred):
         # First offer the preferred networks, in order
-        preferred = [name.lower() for name in preferred]
         for name in preferred:
-            if name in networks:
-                yield networks[name]
-        # Offer the remaining networks in arbitrary order
-        for name, network in networks.items():
-            if name not in preferred:
+            network = NetworkEntry.find(name)
+            if network:
                 yield network
+        # Offer the remaining networks in arbitrary order
+        for network in NetworkEntry.all_networks():
+            yield network
 
-    networks = {n.name():n for n in NetworkEntry.all_networks()}
-    for network in choose(networks, preferred):
+    for network in choose(preferred):
         for mac in macs:
             if mac in network.routers:
                 # We are on a known network
-                if network.ports:
-                    ports.available(network.ports)
-                if network.location:
-                    locations.set_location(network.location)
-                try:
-                    if network.init_script:
-                        script = Run(network.init_script, 'soew')
-                        script.wait()
-                except AttributeError:
-                    pass
-                except ScriptError as error:
-                    print("%s network init_script failed (ignored): '%s'" % (
-                        network.name(), str(script)
-                    ))
-                return network.name(), network.proxy
+                return network.name()
 
-    return unrecognized
+    return 'unknown'
+
+# Initialize network {{{1
+def initializeNetwork(network):
+    if network.ports:
+        ports.available(network.ports)
+    if network.location:
+        locations.set_location(network.location)
+    try:
+        if network.init_script:
+            script = Run(network.init_script, 'soew')
+            script.wait()
+    except AttributeError:
+        pass
+    except ScriptError as error:
+        print("%s network init_script failed (ignored): '%s'" % (
+            network.name(), str(script)
+        ))
 
 # checkForward{{{1
 # Attribute is an SSH port forward, assure it has correct syntax

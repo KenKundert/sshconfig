@@ -10,7 +10,7 @@ Uses docopt::
 
 or::
 
-   pip install docopt
+   pip install docopt (or pip3 install docopt)
 
 Also requires my scripts package::
 
@@ -189,13 +189,28 @@ A typical config.py file would start with would look like::
    }
 
    # My locations
-   LOCATIONS = ['home', 'washington', 'toulouse']
+   LOCATIONS = {
+      'home': 'San Francisco California',
+      'washington': 'Washington DC',
+      'toulouse': 'Toulouse France',
+   }
 
 All of these entries are optional.
 
 Subclassing NetworkEntry creates a network description that is described with 
 the attributes. A subclass will inherit all the attributes of its parent. The 
 following attributes are interpreted.
+
+key:
+   Name used when specifying the network. If not present, the class name in 
+   lower case is used.
+
+description:
+   A description of the network. If not given, the class name is use with the 
+   following modifications:
+   - underscores are replaced by spaces
+   - a space is added to separate a lower case to upper case transition
+   - double underscores are replaced by ' - '
 
 routers:
    A list of MAC addresses for the router that are used to identify the network.  
@@ -282,8 +297,8 @@ file.  Such settings act as defaults.
 PROXIES allows you to give names to proxyCommand values. These names can then be 
 specified on the command line so that all hosts use the proxy.
 
-LOCATIONS is the list of place names where you are likely to be located. It is 
-needed only if you use the locations feature.
+LOCATIONS is a dictionary of place names and descriptions of where you are 
+likely to be located.  It is needed only if you use the locations feature.
 
 
 Hosts
@@ -473,6 +488,17 @@ When not on the home network, it results in an ssh host description of::
 The ssh config file entry for this host will not be generated if not on one of 
 the specified networks and if default is not specified.
 
+It is sometimes appropriate to set the hostname based on which host you are on 
+rather than on which network. For example, if a sshconfig host configuration 
+file is shared between multiple machines, then it is appropriate to give the 
+following for a host which may become localhost:: 
+
+   class Home(HostEntry):
+       if gethostname() == 'home':
+           hostname = '127.0.0.1'
+       else:
+           hostname = '192.168.1.4'
+
 Location
 ''''''''
 
@@ -492,7 +518,11 @@ You can get a list of the known locations using::
 To configure support for locations, you first specify your list of known 
 locations in LOCATIONS::
 
-   LOCATIONS = ['home', 'washington', 'toulouse']
+   LOCATIONS = {
+      'home': 'San Francisco California',
+      'washington': 'Washington DC',
+      'toulouse': 'Toulouse France',
+   }
 
 Then you must configure your hosts to use the location. To do so, you use the 
 choose() method to set the location. The choose() method requires three things:
