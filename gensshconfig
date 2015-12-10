@@ -111,7 +111,7 @@ if unknown:
     print('    ' + '\n    '.join(sorted(unknown)))
 
 # Get description of this situation
-desc = [network.Name(), 'network']
+desc = [network.Name() if network else 'Unknown', 'network']
 if networkDesc:
     desc += ['(%s)' % networkDesc]
 if locations.my_location:
@@ -150,7 +150,11 @@ body = []
 suffix = []
 
 # Output header
-header.append('# SSH Configuration for %s network.' % network.Name())
+header.append(
+    '# SSH Configuration for %s network.' % network.Name()
+    if network else
+    'unknown'
+)
 header.append(time.strftime("# Generated at %-I:%M %p on %d %B %Y."))
 header.append(dedent('''\
     #

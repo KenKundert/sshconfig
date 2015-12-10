@@ -849,17 +849,30 @@ you would like to use a proxy, you use the --proxy (or -P) command line argument
 to specify the proxy by name. For example::
 
    PROXIES = {
-       'work_proxy':   'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
-       'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
+       'work_proxy':   'corkscrew webproxy.ext.workinghard.com 80 %h %p',
+       'school_proxy': 'corkscrew sproxy.fna.learning.edu 1080 %h %p',
    }
 
 Two HTTP proxies are described, the first capable of bypassing the corporate 
-firewall and the second does the same for the school's firewall. If preferred, 
-you can use socat rather than proxytunnel to accomplish the same thing::
+firewall and the second does the same for the school's firewall. Each is 
+a command that takes its input from stdin and produces its output on stdout.  
+The program 'corkscrew' is designed to proxy a TCP connection through an HTTP 
+proxy.  The first two arguments are the host name and port number of the proxy.  
+corkscrew connects to the proxy and passes the third and fourth arguments, the 
+host name and port number of desired destination.
+
+There are many alternatives to corkscrew. One is socat::
 
    PROXIES = {
        'work_proxy':   'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
        'school_proxy': 'socat - PROXY:sproxy.fna.learning.edu:%h:%p,proxyport=1080',
+   }
+
+Another alternative is proxytunnel::
+
+   PROXIES = {
+       'work_proxy':   'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
+       'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
    }
 
 When at work, you should generate your ssh config file using::

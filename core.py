@@ -1,6 +1,6 @@
 # Core Internal Classes for SSHConfig
 
-from sshconfig import NetworkEntry, locations
+from sshconfig import NetworkEntry, locations, ports
 from scripts import join, normpath, head, Run, ScriptError
 import os
 
@@ -348,7 +348,8 @@ def initializeNetwork(network):
             script.wait()
     except AttributeError:
         pass
-    except ScriptError as error:
+    except ScriptError:
+        # not capturing output, so user should already have error message
         print("%s network init_script failed (ignored): '%s'" % (
             network.name(), str(script)
         ))

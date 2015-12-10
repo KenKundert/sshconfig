@@ -21,6 +21,12 @@ import getpass
 def getusername():
     return getpass.getuser()
 
+# is_ip_addr {{{2
+import re
+ip_addr_ptn = re.compile(r"\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s*\Z")
+def is_ip_addr(addr):
+    return ip_addr_ptn.match(addr)
+
 # VNC {{{2
 # Generates forwards for VNC
 def VNC(
