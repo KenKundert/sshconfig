@@ -151,9 +151,9 @@ suffix = []
 
 # Output header
 header.append(
-    '# SSH Configuration for %s network.' % network.Name()
-    if network else
-    'unknown'
+    '# SSH Configuration for %s network.' % (
+        network.Name() if network else 'unknown'
+    )
 )
 header.append(time.strftime("# Generated at %-I:%M %p on %d %B %Y."))
 header.append(dedent('''\
