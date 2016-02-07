@@ -7,6 +7,7 @@ setup(
     name='sshconfig'
   , version='1.0.0'
   , description='generate ssh config file'
+  , long_description=readme
   , author="Ken Kundert"
   , author_email='ken@designers-guide.com'
   , url='http://nurdletech.com/linux-utilities/sshconfig'
