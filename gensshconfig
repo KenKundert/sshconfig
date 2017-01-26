@@ -115,7 +115,10 @@ desc = [network.Name() if network else 'Unknown', 'network']
 if networkDesc:
     desc += ['(%s)' % networkDesc]
 if locations.my_location:
-    desc.append('located in %s' % LOCATIONS[locations.my_location])
+    try:
+        desc.append('located in %s' % LOCATIONS[locations.my_location])
+    except KeyError:
+        exit('Unknown location, choose from %s.' % ', '.join(LOCATIONS))
 if ports.available_ports:
     desc.append(
         'using port%s %s' % (
