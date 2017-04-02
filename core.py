@@ -303,9 +303,9 @@ def identifyNetwork(preferred):
         arp = Run(['/sbin/arp', '-a', '-n'], 'sOeW')
     except ScriptError as error:
         print(str(error))
-        return unrecognized
+        return 'unknown'
     if arp.status:
-        return unrecognized
+        return 'unknown'
     arpTable = arp.stdout.strip().split('\n')
     #arpTable = open('/proc/net/arp').readlines()
 
