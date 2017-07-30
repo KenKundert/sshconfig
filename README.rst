@@ -107,7 +107,7 @@ basis.
 
 Config
 ''''''
-A typical config.py file would start with would look like::
+A typical config.py file might look like::
 
    #
    # SSH Config -- Basic Network Configuration
@@ -268,11 +268,11 @@ init_script:
    copy the 'Device MAC address' into 'Cloned MAC address' and change a few 
    digits. The digits are hexadecimal, so choose values between 0-9A-F. Then 
    click 'Save', 'Close', and restart your network connection.
-   
+
 proxy:
    The name of the proxy to use by default when this network is active.
 
-PREFERRED_NETWORKS specifies a list of preferred networks. It is useful your 
+PREFERRED_NETWORKS specifies a list of preferred networks. It is useful if your 
 computer can access multiple networks simultaneously, such as when you are using 
 a laptop connected to a wired network but you did not turn off the wireless 
 networking.  SSH is configured for the first network on the PREFERRED_NETWORKS 
