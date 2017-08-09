@@ -381,6 +381,21 @@ file I have::
 Ports
 '''''
 
+The default SSH port is 22. However, many ISPs block port 22. For examples, your 
+employer may block port 22 to discourage the use of SSH, which makes them 
+nervous. Coffee shops also have a habit of blocking port 22. To work around 
+these blocks, it is useful to configure SSH to respond to other ports. However, 
+if port 22 is blocked, there is a good chance other ports are blocked as well.  
+For example, one company I was associated with blocked all but ports 80, 443, 
+and 554 (http, https, and real-time streaming protcol) (554 was used by the 
+RealPlayer, which was once heavily used but no longer, so port 554 traffic is no 
+longer allowed through).  A coffee shop I visited blocked everything but ports 
+80 and 443.  Finally, while it is rare to find port 80 blocked, it is common for 
+the ISP to pass all port 80 traffic through a transparent http proxy. This would 
+prevent prevent port 80 from being used by SSH.  So, if at a very minimum, if 
+you are going to support multiple SSH ports, you should try to include port 443 
+in your list.
+
 If a host is capable of accepting connections on more than one port, you should 
 use the choose() method of the ports object to select the appropriate port.
 
@@ -402,17 +417,17 @@ The actual port used is generally the first port given in the list provided to
 choose(). However this behavior can be overridden with the --ports (or -p) 
 command line option.  For example::
 
-   gensshconfig --ports=80,443
+   gensshconfig --ports=443,80
 
 or::
 
-   gensshconfig -p80,443
+   gensshconfig -p443,80
 
 This causes ports.choose() to return the first port given in the --ports 
 specification if it is given anywhere in the list of available ports given as an 
 argument to choose(). If the first port does not work, it will try to return the 
-next one given, and so on. So in this example, port 80 would be returned.  If 
--p443,80 were specified, then port 443 would be used.
+next one given, and so on. So in this example, port 443 would be returned.  If 
+-p80,443 were specified, then port 80 would be used.
 
 You can specify as many ports as you like in a --ports specification, just 
 separate them with a comma and do not add spaces.
