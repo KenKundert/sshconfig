@@ -69,7 +69,7 @@ networkName = identifyNetwork(PREFERRED_NETWORKS)
 options = docopt(__doc__)
 if options['--available']:
     print(
-        'Foreign proxies (you can also use ssh hosts as proxies):\n    '
+        'Explicit proxies (you can also use ssh hosts as proxies):\n    '
       + '\n    '.join(sorted(PROXIES.keys()))
     )
     print('Locations')

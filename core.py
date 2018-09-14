@@ -214,7 +214,11 @@ class Hosts():
                 filename = normpath(join(head(self.config_file), filename))
             attribute = key, filename, desc
             fields.append(attribute)
-            fields.append(('identitiesOnly', 'yes', None))
+            #fields.append(('identitiesOnly', 'yes', None))
+                # not sure this is a good idea
+                # causes problems if I copy a config file to a remote machine
+                # that does not have local copies of the keys and instead are
+                # using a forwarded agent.
 
         # ForwardAgent
         trusted = attributes.get('trusted')
@@ -254,13 +258,14 @@ class Hosts():
 
         # ProxyCommand
         attribute = attributes.get('proxyCommand')
+        network = NetworkEntry.find(self.network)
+        network_proxy = network.proxy if network else None
         if attribute:
             fields.append(attribute)
         elif (
             self.proxy and not (
                 self.proxy == entry.__name__.lower() or (
-                    (self.proxy == NetworkEntry.find(self.network).proxy)
-                    and (self.network in hostnames)
+                    (self.proxy == network_proxy) and (self.network in hostnames)
                 )
             )
         ):
