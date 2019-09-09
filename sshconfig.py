@@ -10,6 +10,17 @@ _KEYS_TO_INHERIT = ['user', 'identityFile']
 LOWER_TO_UPPER_TRANSITION = re.compile(r'([a-z])([A-Z])')
 
 # Utilities {{{1
+# network_name {{{2
+# called from main with the name of the chosen network
+# allows users to change their configuration based on the active network
+chosen_network_name = None
+def set_network_name(name):
+    global chosen_network_name
+    chosen_network_name = name
+
+def get_network_name(name):
+    return chosen_network_name
+
 # gethostname {{{2
 # returns short version of the hostname (the hostname without any domain name)
 import socket

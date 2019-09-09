@@ -219,6 +219,7 @@ class Hosts():
                 # causes problems if I copy a config file to a remote machine
                 # that does not have local copies of the keys and instead are
                 # using a forwarded agent.
+            fields.append(('pubkeyAuthentication', 'yes', None))
 
         # ForwardAgent
         trusted = attributes.get('trusted')

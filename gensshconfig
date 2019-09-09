@@ -22,7 +22,9 @@ example, --ports=80,443.
 Normally the network is determined automatically and need not be specified.
 """
 
-from sshconfig import NetworkEntry, HostEntry, ports, locations
+from sshconfig import (
+    NetworkEntry, HostEntry, ports, locations, set_network_name
+)
 from core import Hosts, identifyNetwork, initializeNetwork
 from scripts import join, script_prefs
 script_prefs(expanduser=True, exit_upon_error=False)
@@ -89,6 +91,7 @@ if options['--available']:
 
 # Apply command line options (they override any chosen by network)
 networkName = options['--network'] if options['--network'] else networkName
+set_network_name(networkName)
 network = NetworkEntry.find(networkName)
 if network:
     initializeNetwork(network)
@@ -116,7 +119,7 @@ if networkDesc:
     desc += ['(%s)' % networkDesc]
 if locations.my_location:
     try:
-        desc.append('located in %s' % LOCATIONS[locations.my_location])
+        desc.append('located near %s' % LOCATIONS[locations.my_location])
     except KeyError:
         exit('Unknown location, choose from %s.' % ', '.join(LOCATIONS))
 if ports.available_ports:
