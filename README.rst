@@ -393,8 +393,10 @@ longer allowed through).  A coffee shop I visited blocked everything but ports
 80 and 443.  Finally, while it is rare to find port 80 blocked, it is common for 
 the ISP to pass all port 80 traffic through a transparent http proxy. This would 
 prevent prevent port 80 from being used by SSH.  So, if at a very minimum, if 
-you are going to support multiple SSH ports, you should try to include port 443 
-in your list.
+you are going to configure a server to support multiple SSH ports, you should 
+try to include port 443 in your list.  If you would like to support more, 
+I recommend 22 (SSH), 53 (DNS), 80 (HTTP), 443 (HTTPS).  In my experience, these 
+are the least likely to be blocked.
 
 If a host is capable of accepting connections on more than one port, you should 
 use the choose() method of the ports object to select the appropriate port.
@@ -448,13 +450,36 @@ In this next example, we customize the proxy command based on the port chosen::
        dynamicForward = 9999
 
 An entry such as this would be used if sshd is configured to directly accept 
-traffic on port 22, and Apache is configured to act as a proxy for ssh on ports 
-80 and 443 (see `SSH via HTTP 
+traffic on port 22, and Apache on the same server is configured to act as 
+a proxy for ssh on port 80 (see `SSH via HTTP 
 <http://www.nurdletech.com/linux-notes/ssh/via-http.html>`.
 
 If you prefer, you can use proxytunnel rather than socat in the proxy command::
 
    proxyCommand = 'proxytunnel -q -p %h:%p -d 127.0.0.1:22'
+
+You can also use this command for port 443, but you may need to add the -E 
+option if encryption is enabled on port 443.
+
+An alternate scenario is that you need to use a port that the host does not 
+support.  In this case you would use another server as an intermediate jump 
+host.  For example::
+
+   class Backups(HostEntry):
+       description = "Backups server"
+       user = 'dumper'
+       hostname = '143.18.194.32'
+       port = ports.choose([22, 80, 443])
+       if port in [443]:
+           proxyJump = 'tunnelr'
+           port = 22
+       identityFile = 'my2014key'
+
+In this example Backups indicates that it supports ports 22, 80 and 443 even 
+though the server itself only supports port 22. However, if port 80 or port 443 
+is selected, then *tunnelr* is configured as a jump server. The port must be 
+reset to port 22 so that the jump server connect to port 22 on the Backups 
+server.
 
 
 Attribute Descriptions
@@ -761,7 +786,7 @@ On a foreign network produces::
        identitiesOnly yes
        forwardAgent yes
 
-   # Entry Host to Machine Farm (with forwards)
+   # Entry Host to Machine Farm (with port forwards)
    host farm-tun earth-tun
        user herbie
        hostname 231.91.164.92
@@ -834,7 +859,7 @@ This generates::
        forwardAgent no
        proxyCommand ssh farm -W %h:%p
 
-   # 128GB Compute Server (with forwards)
+   # 128GB Compute Server (with port forwards)
    host jupiter-tun
        user herbie
        hostname jupiter

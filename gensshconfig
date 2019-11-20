@@ -156,11 +156,16 @@ body = []
 suffix = []
 
 # Output header
-header.append(
-    '# SSH Configuration for %s network.' % (
-        network.Name() if network else 'unknown'
-    )
-)
+if network:
+    name, desc = network.Name(), network.desc()
+else:
+    name, desc = 'unknown', None
+if desc:
+    title = f'# SSH Configuration for {name} network -- {desc}'
+else:
+    title = f'# SSH Configuration for {name} network'
+header.append(title)
+
 header.append(time.strftime("# Generated at %-I:%M %p on %d %B %Y."))
 header.append(dedent('''\
     #

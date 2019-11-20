@@ -156,7 +156,7 @@ class Hosts():
         attribute = attributes.get('description')
         if attribute:
             key, value, desc = attribute
-            description = (value + ' (with forwards)') if forwards else value
+            description = (value + ' (with port forwards)') if forwards else value
         else:
             description = None
 
