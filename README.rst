@@ -1,31 +1,32 @@
 SSH Config
 ==========
 
+:Author: Ken Kundert
+:Version: 1.1.0
+:Released: 2019-12-18
+
+
 Installation Requirements
 -------------------------
 
-Uses docopt::
+You can download and install the latest
+stable version of the code from `PyPI <https://pypi.python.org>`_ using::
 
-   yum install python-docopt  (or python3-docopt)
+    pip3 install --user sshconfig
 
-or::
+You can find the latest development version of the source code on
+`Github <https://github.com/KenKundert/sshconfig>`_.
 
-   pip install docopt (or pip3 install docopt)
-
-Also requires my scripts package::
-
-   git clone https://github.com/KenKundert/scripts.git
-   cd scripts
-   ./install
+Supported in Python3.6, Python3.7 and Python3.8.
 
 
 Introduction
 ------------
-SSH Config generates an ssh config file adapted to the network you are currently 
-using.  In this way, you always use the fastest paths available for your ssh 
+SSH Config generates an SSH config file adapted to the network you are currently 
+using.  In this way, you always use the fastest paths available for your SSH 
 related activities (sshfs, email, vnc, mercurial, etc.). You can also easily 
-reconfigure ssh to make use of proxies as needed or select certain servers or 
-ports based on your location or restrictions on the network.
+reconfigure SSH to make use of proxies as needed or select certain servers or 
+ports based on your location or restrictions with the network.
 
 The following situations are supported:
 
@@ -59,11 +60,12 @@ The following situations are supported:
    so you have considerable freedom to change the configuration based on things 
    like the name of the machine or the user when generating the SSH config file.
 
+
 Trivial Configuration
 ---------------------
 
-The hosts that you would like to connect to are described in the hosts.py file.  
-A very simple hosts.py file would look like this::
+The hosts that you would like to connect to are described in the hosts.conf 
+file.  A very simple hosts.conf file would look like this::
 
    from sshconfig import HostEntry
 
@@ -72,15 +74,15 @@ A very simple hosts.py file would look like this::
        hostname = 'zeebra.he.net'
 
 Hosts are described by directly subclassing HostEntry.  Attributes are added 
-that are generally converted to fields in the ssh config file.  
+that are generally converted to fields in the SSH config file.  
 
 The contents of ~/.ssh/config are replaced when you run::
 
-   gensshconfig
+   sshconfig
 
-The above hosts.py file is converted into the following ssh config file::
+The above hosts.conf file is converted into the following SSH config file::
 
-   # SSH Configuration for generic network
+   # SSH Configuration for unknown network
    # Generated at 1:04 PM on 22 July 2014.
 
    #
@@ -92,30 +94,32 @@ The above hosts.py file is converted into the following ssh config file::
        hostname zeebra.he.net
        forwardAgent no
 
-The transformation between a host entry in the hosts.py file and the ssh config 
-file could be affected by the network you are on and any command line options 
-that are specified to gensshconfig, but in this case it is not. Notice that the 
-class name is converted to lower case when creating the hostname.
+The transformation between a host entry in the hosts.conf file and the SSH 
+config file could be affected by the network you are on and any command line 
+options that are specified to *sshconfig*, but in this case it is not. Notice 
+that the class name is converted to lower case when creating the hostname.
+
 
 Configuration
 -------------
 
-The configuration of sshconfig involves two files, config.py and hosts.py.  In 
-config.py you describe networks, proxies, locations, and general defaults. In 
-hosts.py, you describe the machines you would like to connect to on a regular 
-basis.
+The configuration of *sshconfig* involves several files contained in 
+~/.config/sshconfig directory. Specifically, hosts.conf, locations.conf, 
+networks.conf, proxies.conf, and ssh.conf.
 
-Config
-''''''
-A typical config.py file might look like::
+Networks.conf
+"""""""""""""
+
+This file defines your known networks. It need not define all the networks you 
+use, only those where you would like to customize the behavior of *sshconfig*.
+A typical networks.conf file might look like::
 
    #
-   # SSH Config -- Basic Network Configuration
+   # Basic Network Configuration
    #
    # Defines known networks. Recognizes networks by the MAC addresses of their 
-   # routers, can use this information to set default location, ports, init 
-   # script and proxy.
-   #
+   # routers.  Can use this information to set default location, ports, 
+   # initialization script and proxy.
 
    from sshconfig import NetworkEntry
 
@@ -142,7 +146,7 @@ A typical config.py file might look like::
        ]
        ports = [80, 443]
        location = 'home'
-       init_script = 'activate_library_network'
+       init_script = 'unlock_library_network'
 
    class DC_Peets(NetworkEntry):
        routers = ['e4:15:c4:01:1e:95']  # Wireless
@@ -152,48 +156,6 @@ A typical config.py file might look like::
    # Preferred networks, in order. If one of these networks are not available,
    # another will be chosen at random from the available networks.
    PREFERRED_NETWORKS = ['Work']
-
-   # Location of output file (must be an absolute path)
-   CONFIG_FILE = "~/.ssh/config"
-
-   # Attribute overrides for all hosts
-   OVERRIDES = """
-       Ciphers aes256-ctr,aes128-ctr,arcfour256,arcfour,aes256-cbc,aes128-cbc
-   """
-
-   # Attribute defaults for all hosts
-   DEFAULTS = """
-       ForwardX11 no
-
-       # This will keep a seemingly dead connection on life support for 10 
-       # minutes before giving up on it.
-       TCPKeepAlive no
-       ServerAliveInterval 60
-       ServerAliveCountMax 10
-
-       # Enable connection sharing
-       ControlMaster auto
-       ControlPath /tmp/ssh_mux_%h_%p_%r
-   """
-
-   # Known proxies
-   PROXIES = {
-       'work_proxy': 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
-       'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
-       'tunnelr_proxy': 'ssh tunnelr -W %h:%p',
-           # it is not necessary to add tunnelr as a proxy, you can always 
-           # specify a host as a proxy, and if you do you will get this 
-           # proxyCommand by default. The only benefit adding this entry to 
-           # PROXIES provides is that tunnelr is listed in the available proxies 
-           # when using the --available command line option.
-   }
-
-   # My locations
-   LOCATIONS = {
-      'home': 'San Francisco California',
-      'washington': 'Washington DC',
-      'toulouse': 'Toulouse France',
-   }
 
 All of these entries are optional.
 
@@ -206,7 +168,7 @@ key:
    lower case is used.
 
 description:
-   A description of the network. If not given, the class name is use with the 
+   A description of the network. If not given, the class name is used with the 
    following modifications:
    - underscores are replaced by spaces
    - a space is added to separate a lower case to upper case transition
@@ -225,9 +187,9 @@ ports:
    active.
 
 init_script:
-   A script that should be run when on this network. May be a string or a list 
-   of strings. If it is a list of strings they are joined together to form 
-   a command.
+   A script that should be run before using this network. May be a string or 
+   a list of strings. If it is a list of strings they are joined together to 
+   form a command.
 
    The unlock-peets script is included as an example of such a script. It is 
    used to automate the process of accepting the terms & conditions on the 
@@ -247,7 +209,7 @@ init_script:
    returned to the router along with your acceptance, and the router then 
    rewrites its firewall rules to allow your computer to access the internet.  
    After some period of time (an hour? a day?) the rules are discarded and you 
-   loose your connection to the Internet.  All of this tremendously abuses 
+   lose your connection to the Internet.  All of this tremendously abuses 
    Internet protocols, and causes its visitors headaches because this hack is 
    not compatible with HTTPS or VPN traffic. So for it to work, you must request 
    a plain HTTP site with any VPNs disabled, and plain HTTP sites are 
@@ -272,41 +234,136 @@ init_script:
 proxy:
    The name of the proxy to use by default when this network is active.
 
-PREFERRED_NETWORKS specifies a list of preferred networks. It is useful if your 
-computer can access multiple networks simultaneously, such as when you are using 
-a laptop connected to a wired network but you did not turn off the wireless 
-networking.  SSH is configured for the first network on the PREFERRED_NETWORKS 
-list that is available. If none of the preferred networks are available, then an 
-available known network is chosen at random. If no known networks are available, 
-SSH is configured for a generic network. In the example, the *Work* network is 
-listed in the preferred networks because *Work* and *WorkWireless* would 
-expected to often be available simultaneously, and *Work* is the wired network 
-and is considerably faster than *WorkWireless*.
+In addition to the *NetworkEntry* class definitions, this file may also define 
+*PREFERRED_NETWORKS*.
 
-CONFIG_FILE specifies the name of the ssh config file; the default is 
-~/.ssh/config. The path to the SSH config file should be an absolute path.
-
-OVERRIDES contains ssh directives that are simply added to the top of the ssh 
-config file.  Such settings override any settings specified in the host entries.  
-Do not place ForwardAgent in OVERRIDES.  It will be added on the individual 
-hosts and only set to yes if they are trusted.
-
-DEFAULTS contains ssh directives that are added to the bottom of the ssh config 
-file.  Such settings act as defaults.
-
-PROXIES allows you to give names to proxyCommand values. These names can then be 
-specified on the command line so that all hosts use the proxy.
-
-LOCATIONS is a dictionary of place names and descriptions of where you are 
-likely to be located.  It is needed only if you use the locations feature.
+*PREFERRED_NETWORKS*:
+   A list of strings that specify the preferred networks. It is useful if your 
+   computer can access multiple networks simultaneously, such as when you are 
+   using a laptop connected to a wired network but you did not turn off the 
+   wireless networking.  SSH is configured for the first network on the 
+   *PREFERRED_NETWORKS* list that is available. If none of the preferred 
+   networks are available, then an available known network is chosen at random.  
+   If no known networks are available, SSH is configured for a generic network.  
+   In the example, the *Work* network is listed in the preferred networks 
+   because *Work* and *WorkWireless* would often be expected to be available 
+   simultaneously, and *Work* is the wired network and is considerably faster 
+   than *WorkWireless*.
 
 
-Hosts
-'''''
-A more typical hosts.py file would generally contain many host specifications.
+ssh.conf
+""""""""
 
-You subclass HostEntry to specify a host and then add attributes to configure 
-its behavior.  Information you specify is largely just placed in the ssh config 
+This file allows you to control the entries in your SSH configuration file.
+A typical ssh.conf file might look like::
+
+   # Location of output file (must be an absolute path)
+   CONFIG_FILE = "~/.ssh/config"
+
+   # Don't scramble known_hosts file on trusted hosts.
+   TRUSTED_HOSTS = ['lucifer']
+
+   # Attribute overrides for all hosts
+   OVERRIDES = """
+       Ciphers aes256-ctr,aes128-ctr,arcfour256,arcfour,aes256-cbc,aes128-cbc
+   """
+
+   # Attribute defaults for all hosts
+   DEFAULTS = """
+       ForwardX11 no
+
+       # This will keep a seemingly dead connection on life support for 10 
+       # minutes before giving up on it.
+       TCPKeepAlive no
+       ServerAliveInterval 60
+       ServerAliveCountMax 10
+
+       # Enable connection sharing
+       ControlMaster auto
+       ControlPath /tmp/ssh_mux_%h_%p_%r
+   """
+
+All of these entries are optional.  The following attributes are interpreted.
+
+*CONFIG_FILE*:
+    A string that specifies path to the SSH config file. If not given, 
+    ~/.ssh/config is used.  The path to the SSH config file should be an 
+    absolute path.
+
+*TRUSTED_HOSTS*:
+    A list of strings that specifies the host names of trusted hosts. The 
+    *known_hosts* file is not scrambled on known hosts. Generally you should 
+    only trust hosts that you control. If you do not scramble your *known_hosts*
+    file they someone with root privileges could examine you *known_hosts* file 
+    and determine which hosts you are using.
+
+*OVERRIDES*:
+    A string that specifies the SSH settings that should be used on all hosts,  
+    overriding conflicting settings specified in the host entry.  They are 
+    simply added to the top of the SSH config file.  Do not place ForwardAgent 
+    in OVERRIDES.  It will be added on the individual hosts and only set to yes 
+    if they are trusted.
+
+
+*DEFAULTS*:
+    A string that specifies the SSH settings that should be used on all hosts,
+    without overriding conflicting settings specified in the host entry.  They 
+    are added to the bottom of the SSH config file.
+
+
+proxies.conf
+""""""""""""
+
+This file allows you to define any non-SSH proxies that you might want to use.
+A typical proxies.conf file might look like::
+
+   # Known proxies
+   PROXIES = dict(
+       work_proxy = 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
+       school_proxy = 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
+       tunnelr_proxy = 'ssh tunnelr -W %h:%p',
+   )
+
+All of these entries are optional.  The following attributes are interpreted.
+
+*PROXIES*:
+   A dictionary that defines each proxy.  Each entry consists of a name and 
+   string that would be used directly as the argument for a *proxyCommand* SSH 
+   host attribute.  These names can then be specified on the command line so 
+   that all hosts use the proxy.
+
+   It is not necessary to add SSH hosts as proxies as with *tunnelr_proxy* above 
+   as you can always specify any SSH host as a proxy, and if you do you will get 
+   this proxyCommand by default.  The only benefit that adding this entry to 
+   PROXIES provides is that *tunnelr_proxy* is listed in the available proxies 
+   by *sshconfig settings*.
+
+
+locations.conf
+""""""""""""""
+
+This file allows you to define any locations that you might frequent.  A typical 
+locations.conf file might look like::
+
+   # My locations
+   LOCATIONS = dict(
+      home = 'San Francisco',
+      washington = 'Washington DC',
+      toulouse = 'Toulouse',
+   )
+
+The *LOCATIONS* entry is optional.  It is a dictionary of place names and 
+descriptions.  It is needed only if expect to change the server you access based 
+on your location.
+
+
+hosts.conf
+""""""""""
+
+A more typical hosts.conf file generally contains many host specifications.
+
+You subclass *HostEntry* to specify a host and then add attributes to configure 
+its behavior.  Information you specify is largely just placed in the SSH config 
 file unmodified except:
 
 1. The class name is converted to lower case to make it easier to type.
@@ -315,27 +372,27 @@ file unmodified except:
    to hold intermediate values.
 
 In most cases, whatever attributes you add to your class get converted into 
-fields in the ssh host description. However, there are several attributes that 
-are intercepted and used by SSH Config. They are:
+fields in the SSH host description. However, there are several attributes that 
+are intercepted and used by *sshconfig*. They are:
 
-description:
-   A string that is added as a comment above the ssh host description.
+*description*:
+   A string that is added as a comment above the SSH host description.
 
-aliases:
+*aliases*:
    A list of strings, each of which is added to the list of names that can be 
    used to refer to this host.
 
-trusted:
+*trusted*:
    Indicates that the base host should be trusted. Currently that means that 
    agent forwarding will be configured for the non-tunneling version of the 
    host.
 
-tun_trusted:
+*tun_trusted*:
    Indicates that the tunneling version of the host should be trusted. Currently 
    that means that agent forwarding will be configured for the tunneling version 
    of the host.
 
-guests:
+*guests*:
    A list of machines that are accessed using this host as a proxy.
 
 Here is a example::
@@ -347,7 +404,7 @@ Here is a example::
        hostname = '107.170.65.89'
        identityFile = 'digitalocean'
 
-This results in the following entry in the ssh config file::
+This results in the following entry in the SSH config file::
 
    # Web server
    host digitalocean do web
@@ -357,16 +414,17 @@ This results in the following entry in the ssh config file::
        identitiesOnly yes
        forwardAgent no
 
-When specifying the identityFile, you can either use an absolute or relative 
+When specifying the *identityFile*, you can either use an absolute or relative 
 path. The relative path will be relative to the directory that will contain the 
-ssh config file. Specifying identityFile results in identitiesOnly being added.
+SSH config file. Specifying *identityFile* results in *identitiesOnly* being 
+added.
 
-SSHconfig provides two utility functions that you can use in your hosts file to 
-customize it based on either the hostname or username that are being used when 
-gensshconfig is run. They are gethostname() and getusername() and both can be 
-imported from sshconfig. For example, I generally use a different identity (ssh 
-key) from each machine I operate from. To implement this, at the top of my hosts 
-file I have::
+*SSHconfig* provides two utility functions that you can use in your hosts file 
+to customize it based on either the hostname or username that are being used 
+when *sshconfig* is run. They are *gethostname()* and *getusername()* and both 
+can be imported from *sshconfig*. For example, I generally use a different 
+identity (SSH key) from each machine I operate from. To implement this, at the 
+top of my hosts file I have::
 
    from sshconfig import gethostname
 
@@ -392,14 +450,14 @@ RealPlayer, which was once heavily used but no longer, so port 554 traffic is no
 longer allowed through).  A coffee shop I visited blocked everything but ports 
 80 and 443.  Finally, while it is rare to find port 80 blocked, it is common for 
 the ISP to pass all port 80 traffic through a transparent http proxy. This would 
-prevent prevent port 80 from being used by SSH.  So, if at a very minimum, if 
-you are going to configure a server to support multiple SSH ports, you should 
-try to include port 443 in your list.  If you would like to support more, 
-I recommend 22 (SSH), 53 (DNS), 80 (HTTP), 443 (HTTPS).  In my experience, these 
-are the least likely to be blocked.
+prevent port 80 from being used by SSH.  So, if at a very minimum, if you are 
+going to configure a server to support multiple SSH ports, you should try to 
+include port 443 in your list.  If you would like to support more, I recommend 
+22 (SSH), 53 (DNS), 80 (HTTP), 443 (HTTPS).  In my experience, these are the 
+least likely to be blocked.
 
 If a host is capable of accepting connections on more than one port, you should 
-use the choose() method of the ports object to select the appropriate port.
+use the *choose()* method of the ports object to select the appropriate port.
 
 For example::
 
@@ -413,17 +471,17 @@ For example::
        identityFile = 'tunnelr'
 
 An entry such as this would be used when sshd on the host has been configured to 
-accept ssh traffic on a number of ports, in this case, ports 22, 80 and 443.
+accept SSH traffic on a number of ports, in this case, ports 22, 80 and 443.
 
 The actual port used is generally the first port given in the list provided to 
-choose(). However this behavior can be overridden with the --ports (or -p) 
+*choose()*.  However this behavior can be overridden with the --ports (or -p) 
 command line option.  For example::
 
-   gensshconfig --ports=443,80
+   sshconfig --ports=443,80
 
 or::
 
-   gensshconfig -p443,80
+   sshconfig -p443,80
 
 This causes ports.choose() to return the first port given in the --ports 
 specification if it is given anywhere in the list of available ports given as an 
@@ -470,15 +528,15 @@ host.  For example::
        user = 'dumper'
        hostname = '143.18.194.32'
        port = ports.choose([22, 80, 443])
-       if port in [443]:
+       if port in [80, 443]:
            proxyJump = 'tunnelr'
            port = 22
        identityFile = 'my2014key'
 
-In this example Backups indicates that it supports ports 22, 80 and 443 even 
+In this example *Backups* indicates that it supports ports 22, 80 and 443 even 
 though the server itself only supports port 22. However, if port 80 or port 443 
 is selected, then *tunnelr* is configured as a jump server. The port must be 
-reset to port 22 so that the jump server connect to port 22 on the Backups 
+reset to port 22 so that the jump server connects to port 22 on the Backups 
 server.
 
 
@@ -529,7 +587,7 @@ The ssh config file entry for this host will not be generated if not on one of
 the specified networks and if default is not specified.
 
 It is sometimes appropriate to set the hostname based on which host you are on 
-rather than on which network. For example, if a sshconfig host configuration 
+rather than on which network. For example, if a *sshconfig* host configuration 
 file is shared between multiple machines, then it is appropriate to give the 
 following for a host which may become localhost:: 
 
@@ -539,29 +597,30 @@ following for a host which may become localhost::
        else:
            hostname = '192.168.1.4'
 
+
 Location
 ''''''''
 
 It is also possible to choose the hostname based on location. The user specifies 
 location using::
 
-   gensshconfig --location=washington
+   sshconfig --location=washington
 
 or::
 
-   gensshconfig -lwashington
+   sshconfig -lwashington
 
 You can get a list of the known locations using::
 
-   gensshconfig --available
+   sshconfig settings
 
 To configure support for locations, you first specify your list of known 
-locations in LOCATIONS::
+locations in *LOCATIONS* (in *locations.conf*)::
 
    LOCATIONS = {
-      'home': 'San Francisco California',
+      'home': 'San Francisco',
       'washington': 'Washington DC',
-      'toulouse': 'Toulouse France',
+      'toulouse': 'Toulouse',
    }
 
 Then you must configure your hosts to use the location. To do so, you use the 
@@ -613,28 +672,28 @@ For example::
 Now if the user specifies --location=washington on the command line, then it is 
 mapped to the host location of va, which becomes mclean.tunnelr.com 
 (209.160.73.168).  Normally, users are expected to choose a location from the 
-list given in LOCATIONS. As such, every maps argument should support each of 
+list given in *LOCATIONS*. As such, every *maps* argument should support each of 
 those locations.  However, a user may given any location they wish. If the 
-location given is not found in maps, then it will be looked for in locations, 
+location given is not found in *maps*, then it will be looked for in locations, 
 and if it is not in locations, the default location is used.
 
 
 Forwards
 ''''''''
 
-When forwards are specified, two ssh host entries are created. The first does 
+When forwards are specified, two SSH host entries are created. The first does 
 not include forwarding. The second has the same name with '-tun' appended, and 
 includes the forwarding. The reason this is done is that once one connection is 
-setup with forwarding, a second connection that also attempts to performing 
-forwarding will produce a series of error messages indicating that the ports are 
-in use and so cannot be forwarded. Instead, you should only use the tunneling 
-version once when you want to set up the port forwards, and you the base entry 
-at all other times. Often forwarding connections are setup to run in the 
-background as follows::
+setup with forwarding, a second connection that also attempts forwarding will 
+produce a series of error messages indicating that the ports are in use and so 
+cannot be forwarded. Instead, you should only use the tunneling version once 
+when you want to set up the port forwards, and you the base entry at all other 
+times. Often forwarding connections are setup to run in the background as 
+follows::
 
    ssh -f -N home-tun
 
-If you have set up connection sharing using ControlMaster and then run::
+If you have set up connection sharing using *ControlMaster* and then run::
 
    ssh home
 
@@ -651,11 +710,12 @@ For example::
    '11025 localhost:25'
 
 The local host is used to specify what machines can connect to the port locally.
-If the GatewayPorts setting is set to *yes* on the SSH server, then forwarded 
-ports are accessible to any machine on the network. If the GatewayPorts setting 
-is *no*, then the forwarded ports are only available from the local host.  
-However, if GatewayPorts is set to *clientspecified*, then the accessibility of 
-the forward address is set by the local host specified.  For example:
+If the *GatewayPorts* setting is set to *yes* on the SSH server, then forwarded 
+ports are accessible to any machine on the network. If the *GatewayPorts* 
+setting is *no*, then the forwarded ports are only available from the local 
+host.  However, if *GatewayPorts* is set to *clientspecified*, then the 
+accessibility of the forward address is set by the local host specified.  For 
+example:
 
 =============================== ==============================
 5280 localhost:5280             accessible only from localhost
@@ -881,12 +941,12 @@ Proxies
 Some networks block connections to port 22. If your desired host accepts 
 connections on other ports, you can use the --ports feature described above to 
 work around these blocks. However, some networks block all ports and force you 
-to use a proxy.  Or, if you do have open ports but your host does not accept ssh 
+to use a proxy.  Or, if you do have open ports but your host does not accept SSH 
 traffic on those ports, you can sometimes use a proxy to access your host.
 
-Available proxies are specified by adding PROXIES to the hosts.py file. Then, if 
-you would like to use a proxy, you use the --proxy (or -P) command line argument 
-to specify the proxy by name. For example::
+Available proxies are specified by adding *PROXIES* in the proxies.conf file.  
+Then, if you would like to use a proxy, you use the --proxy (or -P) command line 
+argument to specify the proxy by name. For example::
 
    PROXIES = {
        'work_proxy':   'corkscrew webproxy.ext.workinghard.com 80 %h %p',
@@ -915,40 +975,40 @@ Another alternative is proxytunnel::
        'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
    }
 
-When at work, you should generate your ssh config file using::
+When at work, you should generate your SSH config file using::
 
-   gensshconfig --proxy=work_proxy
+   sshconfig --proxy=work_proxy
 
 or::
 
-   gensshconfig --Pwork_proxy
+   sshconfig --Pwork_proxy
 
 You can get a list of the pre-configured proxies using::
 
-   gensshconfig --available
+   sshconfig --available
 
-It is also possible to use ssh hosts as proxies. For example, when at an 
-internet cafe that blocks port 22, you can work around the blockage 
-even if your host only supports 22 using::
+It is also possible to use SSH hosts as proxies. For example, when at an 
+internet cafe that blocks port 22, you can work around the blockage even if your 
+host only supports 22 using::
 
-   gensshconfig --ports=80 --proxy=tunnelr
+   sshconfig --ports=80 --proxy=tunnelr
 
 or::
 
-   gensshconfig -p80 --Ptunnelr
+   sshconfig -p80 --Ptunnelr
 
-Using the --proxy command line argument adds a proxyCommand entry to every host 
-that does not already have one (except the host being used as the proxy). In 
-that way, proxies are automatically chained. For example, in the example given 
-above Jupiter subclasses Farm, and so it naturally gets a proxyCommand that 
-causes it to be proxied through Farm, but Farm does not have a proxyCommand. By 
-running gensshconfig with --proxy=tunnelr, Farm will get the proxyCommand 
-indicating it should proxy through tunnelr, but Jupiter retains its original 
-proxyCommand.  So when connecting to jupiter a two link proxy chain is used: 
-packets are first sent to tunnelr, which then forwards them to farm, which 
-forwards them to jupiter.
+Using the --proxy command line argument adds a *proxyCommand* entry to every 
+host that does not already have one (except the host being used as the proxy).  
+In that way, proxies are automatically chained. For example, in the example 
+given above *Jupiter* subclasses *Farm*, and so it naturally gets 
+a *proxyCommand* that causes it to be proxied through *Farm*, but *Farm* does 
+not have a *proxyCommand*. By running *sshconfig* with --proxy=tunnelr, *Farm* 
+will get the *proxyCommand* indicating it should proxy through tunnelr, but 
+*Jupiter* retains its original *proxyCommand*.  So when connecting to jupiter 
+a two link proxy chain is used: packets are first sent to tunnelr, which then 
+forwards them to farm, which forwards them to jupiter.
 
-You can specify a proxy on the NetworkEntry for you network. If you do, that 
+You can specify a proxy on the *NetworkEntry* for you network. If you do, that 
 proxy will be used by default when on that network for all hosts that not on 
 that network. A host is said to be on the network if the hostname is 
 specifically given for that network. For example, assume you have a network 
@@ -970,7 +1030,6 @@ one that is (Farm)::
            'home': '192.168.0.1',
            'default': '74.125.232.64'
        }
-       proxyCommand = 'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80'
 
    class Farm(HostEntry):
        description = "Entry Host to Machine farm"
@@ -981,5 +1040,5 @@ one that is (Farm)::
            'default': '231.91.164.92'
        }
 
-When on the work network, when you connect to Home you will use the proxy and 
+When on the work network, when you connect to home you will use the proxy and 
 when you connect to farm, you will not.

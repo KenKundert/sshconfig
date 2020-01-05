@@ -1,12 +1,12 @@
+# SSHConfig utility classes and functions
 #
-# Utilities for ssh config file generator
-#
+# These are used by the user in the conf files.
 
 # Imports {{{1
 import re
 
 # Globals {{{1
-_KEYS_TO_INHERIT = ['user', 'identityFile']
+KEYS_TO_INHERIT = ['user', 'identityFile']
 LOWER_TO_UPPER_TRANSITION = re.compile(r'([a-z])([A-Z])')
 
 # Utilities {{{1
@@ -16,21 +16,11 @@ LOWER_TO_UPPER_TRANSITION = re.compile(r'([a-z])([A-Z])')
 chosen_network_name = None
 def set_network_name(name):
     global chosen_network_name
-    chosen_network_name = name
+    chosen_network_name = name.lower()
 
-def get_network_name(name):
+def get_network_name():
+    "Returns name of network (lowercase)"
     return chosen_network_name
-
-# gethostname {{{2
-# returns short version of the hostname (the hostname without any domain name)
-import socket
-def gethostname():
-    return socket.gethostname().split('.')[0]
-
-# getusername {{{2
-import getpass
-def getusername():
-    return getpass.getuser()
 
 # is_ip_addr {{{2
 ip_addr_ptn = re.compile(r"\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s*\Z")
@@ -84,6 +74,9 @@ class NetworkEntry():
 
     @classmethod
     def desc(cls):
+        # the descriptions that are created from the class name are
+        # unattractive, and the rest of the code tends to use cls.description
+        # rather than cls.desc().
         if cls.description:
             return cls.description
         # Return formatted name
@@ -125,6 +118,10 @@ class NetworkEntry():
                 yield subclass.key.lower()
             yield subclass.__name__.lower()
 
+    @classmethod
+    def get_location(cls, given=None):
+        return given if given else cls.location
+
 # HostEntry class {{{1
 # Used to describe an available host
 class HostEntry():
@@ -155,7 +152,7 @@ class HostEntry():
             # Get the hostname and port number
             hostname = my_fields.pop('hostname', cls.name())
             port = my_fields.pop('port', 22)
-            fields = {key: parent_fields[key] for key in _KEYS_TO_INHERIT}
+            fields = {key: parent_fields[key] for key in KEYS_TO_INHERIT}
             fields.update({
                 'proxyCommand': (
                     #'ssh {} -W %h:%p'.format(parent.name()),

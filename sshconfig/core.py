@@ -1,10 +1,9 @@
-# Core Internal Classes for SSHConfig
+# Core internal classes and functions
 
-from sshconfig import NetworkEntry, locations, ports
-from scripts import join, normpath, head, Run, ScriptError
-import os
-
-DEFAULT_NETWORK_NAME = 'default'
+from .preferences import DEFAULT_NETWORK_NAME
+from .sshconfig import NetworkEntry
+from inform import display
+from shlib import to_path
 
 # Fields Class {{{1
 class Fields():
@@ -15,11 +14,10 @@ class Fields():
         if field:
             self.fields.append(field)
 
-    def _convert(self, field):
-        leader = '    '
-        comment_leader = '\n%s%s# ' % (leader, leader)
+    def _format_field(self, field):
+        comment_leader = '\n        # '
         key, value, desc = field
-        text = leader + '%s %s' % (key, value)
+        text = '    {} {}'.format(key, value)
         if desc:
             if not isinstance(desc, list):
                 desc = [desc]
@@ -28,7 +26,7 @@ class Fields():
 
     # Iterate through fields, converting them to strings
     def render_host(self):
-        return [self._convert(field) for field in self.fields]
+        return [self._format_field(field) for field in self.fields]
 
     # Iterate through fields, converting them to strings while replacing
     # hostname with that of guest and adding proxy through host
@@ -46,7 +44,7 @@ class Fields():
             for key, val, desc in self.fields
             if key not in ['hostname', 'port']
         ]
-        return [self._convert(field) for field in fields]
+        return [self._format_field(field) for field in fields]
 
 # Attributes Class {{{1
 class Attributes():
@@ -101,33 +99,41 @@ class Attributes():
 
 # Hosts Class {{{1
 class Hosts():
-    def __init__(self, network, proxy, proxies, config_file):
+    def __init__(self, network, proxy, proxies, settings):
         self.network = network
         self.proxy = proxy
         self.proxies = proxies
-        self.config_file = config_file
+        self.config_file = settings.ssh_config_file
+        self.config_dir = settings.ssh_config_file.parent
         self.hosts = []
+        self.hosts_by_name = {}
 
     def _append(self, name, fields, aliases=None, desc=None, guests=None):
         # process primary host
-        names = ' '.join([name] + (aliases if aliases else []))
+        names_as_list = [name] + (aliases if aliases else [])
+        names = ' '.join(names_as_list)
         if desc:
-            header = "# %s\nhost %s" % (desc, names)
+            header = "# {}\nhost {}".format(desc, names)
         else:
-            header = "host %s" % (names)
-        self.hosts.append('\n'.join([header] + fields.render_host()))
+            header = "host {}s".format(names)
+        host = '\n'.join([header] + fields.render_host())
+        self.hosts.append(host)
+        for name in names_as_list:
+            self.hosts_by_name[name] = host
 
         # process guests
         for guest in guests:
             key, guestname, desc = guest
-            fullname = '%s-%s' % (name, guestname)
+            fullname = '-'.join([name, guestname])
             if desc:
-                header = "# %s\nhost %s" % (desc, fullname)
+                header = "# {}\nhost {}".format(desc, fullname)
             else:
-                header = "host %s" % (fullname)
-            self.hosts.append('\n'.join(
+                header = "host {}".format(fullname)
+            host = '\n'.join(
                 [header] + fields.render_guest(guestname, name)
-            ))
+            )
+            self.hosts.append(host)
+            self.hosts_by_name[fullname] = host
 
     def process(self, entry, forwards):
         fields = Fields()
@@ -179,7 +185,7 @@ class Hosts():
                   - set(list(NetworkEntry.known()) + [DEFAULT_NETWORK_NAME])
                 )
                 if unknown_networks:
-                    print('%s: uses unknown networks: %s' % (
+                    display('{}: uses unknown networks: {}'.format(
                         name, ', '.join(sorted(unknown_networks))
                     ))
                 if self.network in hostnames:
@@ -209,9 +215,7 @@ class Hosts():
         attribute = attributes.get('identityFile')
         if attribute:
             key, value, desc = attribute
-            filename = join(value)
-            if not os.path.isabs(filename):
-                filename = normpath(join(head(self.config_file), filename))
+            filename = to_path(self.config_dir, value)
             attribute = key, filename, desc
             fields.append(attribute)
             #fields.append(('identitiesOnly', 'yes', None))
@@ -236,20 +240,20 @@ class Hosts():
 
         # LocalForwards
         for attribute in attributes.getall('localForward'):
-            checkForward(attribute)
+            check_forward(attribute)
             fields.append(attribute)
             forwarding = True
 
         # RemoteForwards
         for attribute in attributes.getall('remoteForward'):
-            checkForward(attribute)
+            check_forward(attribute)
             fields.append(attribute)
             forwarding = True
 
         # DynamicForward
         attribute = attributes.get('dynamicForward')
         if attribute:
-            checkForward(attribute, True)
+            check_forward(attribute, True)
             fields.append(attribute)
             forwarding = True
 
@@ -302,65 +306,7 @@ class Hosts():
         return '\n\n'.join(self.hosts)
 
 
-# Identify Network {{{1
-# Identifies which network we are on based on contents of /proc/net/arp
-def identifyNetwork(preferred):
-    try:
-        arp = Run(['/sbin/arp', '-a', '-n'], 'sOeW')
-    except ScriptError as error:
-        print(str(error))
-        return 'unknown'
-    if arp.status:
-        return 'unknown'
-    arpTable = arp.stdout.strip().split('\n')
-    #arpTable = open('/proc/net/arp').readlines()
-
-    macs = []
-    for row in arpTable:
-        #gateway, hwtype, flags, mac, mask, interface = row.split()
-        try:
-            ignore, gateway, ignore, mac, hwtype, ignore, iface = row.split()
-            macs.append(mac)
-        except ValueError:
-            continue
-
-    def choose(preferred):
-        # First offer the preferred networks, in order
-        for name in preferred:
-            network = NetworkEntry.find(name)
-            if network:
-                yield network
-        # Offer the remaining networks in arbitrary order
-        for network in NetworkEntry.all_networks():
-            yield network
-
-    for network in choose(preferred):
-        for mac in macs:
-            if mac in network.routers:
-                # We are on a known network
-                return network.name()
-
-    return 'unknown'
-
-# Initialize network {{{1
-def initializeNetwork(network):
-    if network.ports:
-        ports.available(network.ports)
-    if network.location:
-        locations.set_location(network.location)
-    try:
-        if network.init_script:
-            script = Run(network.init_script, 'soew')
-            script.wait()
-    except AttributeError:
-        pass
-    except ScriptError:
-        # not capturing output, so user should already have error message
-        print("%s network init_script failed (ignored): '%s'" % (
-            network.name(), str(script)
-        ))
-
-# checkForward{{{1
+# check_forward{{{1
 # Attribute is an SSH port forward, assure it has correct syntax
 import re
 re_ipaddr = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
@@ -375,7 +321,7 @@ re_forward = r'\A(({addr}|{host}|{all}):)?{port}\Z'.format(
 )
 forward_pattern = re.compile(re_forward, re.I)
 
-def checkForward(attribute, dynamic=False):
+def check_forward(attribute, dynamic=False):
     if dynamic:
         # expected format is [bindaddr:]port where port is an integer and bind 
         # address may be hostname, ip address, or *.

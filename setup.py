@@ -1,36 +1,37 @@
+#!/usr/bin/env python
+
 from setuptools import setup
 
 with open('README.rst') as f:
     readme = f.read()
 
 setup(
-    name='sshconfig'
-  , version='1.0.0'
-  , description='generate ssh config file'
-  , long_description=readme
-  , author="Ken Kundert"
-  , author_email='ken@designers-guide.com'
-  , url='http://nurdletech.com/linux-utilities/sshconfig'
-  , download_url='https://github.com/kenkundert/sshconfig/tarball/master'
-  , scripts=['gensshconfig']
-  , py_modules=['sshconfig', 'config', 'hosts', 'core']
-  , license='GPLv3+'
-  , install_requires=['docopt']
-  , platforms=['linux']
-  , classifiers=[
-        'Development Status :: 3 - Alpha'
-      , 'Environment :: Console'
-      , 'Intended Audience :: End Users/Desktop'
-      , 'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)'
-      , 'Natural Language :: English'
-      , 'Operating System :: POSIX :: Linux'
-      , 'Programming Language :: Python :: 3.6'
-      , 'Programming Language :: Python :: 3.5'
-      , 'Programming Language :: Python :: 3.4'
-      , 'Programming Language :: Python :: 3.3'
-      , 'Programming Language :: Python :: 3'
-      , 'Programming Language :: Python :: 2.7'
-      , 'Programming Language :: Python :: 2'
-      , 'Topic :: Utilities'
+    name = 'sshconfig',
+    version = '1.1.0',
+    author = 'Ken Kundert',
+    author_email = 'sshconfig@nurdletech.com',
+    description = 'SSH config file generator',
+    long_description = readme,
+    url = 'https://sshconfig.readthedocs.io',
+    download_url = 'https://github.com/kenkundert/sshconfig/tarball/master',
+    license = 'GPLv3+',
+    packages = 'sshconfig'.split(),
+    entry_points = {'console_scripts': [
+        'sshconfig=sshconfig.main:main',
+    ]},
+    install_requires = 'appdirs arrow docopt inform shlib'.split(),
+    python_requires='>=3.6',
+
+    keywords='ssh'.split(),
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+        'Natural Language :: English',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Topic :: Utilities',
     ],
 )
