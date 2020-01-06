@@ -510,7 +510,7 @@ In this next example, we customize the proxy command based on the port chosen::
 An entry such as this would be used if sshd is configured to directly accept 
 traffic on port 22, and Apache on the same server is configured to act as 
 a proxy for ssh on port 80 (see `SSH via HTTP 
-<http://www.nurdletech.com/linux-notes/ssh/via-http.html>`.
+<http://www.nurdletech.com/linux-notes/ssh/via-http.html>`_.
 
 If you prefer, you can use proxytunnel rather than socat in the proxy command::
 
