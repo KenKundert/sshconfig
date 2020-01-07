@@ -7,7 +7,7 @@ with open('README.rst') as f:
 
 setup(
     name = 'sshconfig',
-    version = '1.1.0',
+    version = '1.2.0',
     author = 'Ken Kundert',
     author_email = 'sshconfig@nurdletech.com',
     description = 'SSH config file generator',
