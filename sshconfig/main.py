@@ -19,9 +19,7 @@ Specify the list of available ports as a comma separated list (no spaces). For
 example, --ports=80,443.
 
 Normally the network is determined automatically and need not be specified.
-"""
 
-commands = """
 Commands:
 {commands}
 
@@ -47,21 +45,25 @@ Use 'sshconfig help' for list of available help topics.
 
 
 # Imports {{{1
-from . import __version__, __released__
+from docopt import docopt
+
+from inform import Error, Inform, display, done, fatal, os_error
+from shlib import set_prefs as shlib_set_prefs
+from shlib import to_path
+
+from . import __released__, __version__
 from .command import Command
 from .preferences import CONFIG_DIR, DATA_DIR, LOG_FILE
 from .settings import Settings
-from docopt import docopt
-from inform import Inform, Error, cull, display, done, fatal, os_error
-from shlib import to_path, set_prefs as shlib_set_prefs
+
 shlib_set_prefs(use_inform=True)
 
 
 # Globals {{{1
-synopsis = __doc__ + commands.format(commands=Command.summarize())
-version = f'{__version__} ({__released__})'
+synopsis = __doc__.format(commands=Command.summarize())
+version = f"{__version__} ({__released__})"
 
-from .command import Command
+
 # Main {{{1
 def main():
     with Inform(notify_if_no_tty=True, version=version) as inform:
@@ -73,9 +75,9 @@ def main():
 
             # read command line
             cmdline = docopt(synopsis, options_first=True, version=version)
-            command = cmdline['<command>']
-            args = cmdline['<args>']
-            if cmdline['--quiet']:
+            command = cmdline["<command>"]
+            args = cmdline["<args>"]
+            if cmdline["--quiet"]:
                 inform.quiet = True
 
             # find and run command
@@ -84,7 +86,7 @@ def main():
             cmd.execute(cmd_name, args, settings, cmdline)
 
         except KeyboardInterrupt:
-            display('Terminated by user.')
+            display("Terminated by user.")
         except Error as e:
             e.terminate()
         except OSError as e:

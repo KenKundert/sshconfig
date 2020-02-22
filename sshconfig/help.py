@@ -15,14 +15,16 @@
 # details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program.  If not, see http://www.gnu.org/licenses/.
+# this program.  If not, see http://www.gnu.org/licenses.
 
 
 # Imports {{{1
+from textwrap import dedent
+
+from inform import Error, error, output
+
 from .command import Command
 from .utilities import pager, two_columns
-from inform import error, output, Error
-from textwrap import dedent
 
 
 # HelpMessage base class {{{1
@@ -60,9 +62,10 @@ class HelpMessage(object):
                 if name == topic.get_name():
                     return pager(topic.help())
 
-            error('topic not found.', culprit=name)
+            error("topic not found.", culprit=name)
         else:
             from .main import synopsis
+
             cls.help(synopsis)
 
     # summarize {{{2
@@ -71,18 +74,18 @@ class HelpMessage(object):
         summaries = []
         for topic in sorted(cls.topics(), key=lambda topic: topic.get_name()):
             summaries.append(two_columns(topic.get_name(), topic.DESCRIPTION))
-        return '\n'.join(summaries)
+        return "\n".join(summaries)
 
     # help {{{2
     @classmethod
     def help(cls, desc):
         if desc:
-            output(desc.strip() + '\n')
+            output(desc.strip() + "\n")
 
-        output('Available commands:')
+        output("Available commands:")
         output(Command.summarize())
 
-        output('\nAvailable topics:')
+        output("\nAvailable topics:")
         output(cls.summarize())
 
 
@@ -92,12 +95,14 @@ class Overview(HelpMessage):
 
     @staticmethod
     def help():
-        text = dedent("""
+        text = dedent(
+            """
             SSH Config generates an SSH config file adapted to the network you
             are currently using.  In this way, you always use the fastest paths
             available for your SSH related activities (sshfs, email, vnc,
             mercurial, etc.). You can also easily reconfigure SSH to make use
             of proxies as needed or select certain servers or ports based on
             your location or restrictions on the network.
-        """).strip()
+            """
+        ).strip()
         return text

@@ -15,38 +15,39 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 # Imports {{{1
-from .preferences import CONFIG_DIR, DATA_DIR, LOG_FILE
-from shlib import Run, to_path
-from inform import is_str
-from pipes import quote
+from shlib import Run
 import os
-import shlex
 import socket
 import pwd
+
 
 # gethostname {{{1
 # returns short version of the hostname (the hostname without any domain name)
 def gethostname():
     return socket.gethostname().split('.')[0]
 
+
 # getusername {{{1
 def getusername():
     return pwd.getpwuid(os.getuid()).pw_name
+
 
 # pager {{{1
 def pager(text):
     program = os.environ.get('PAGER', 'less')
     Run([program], stdin=text, modes='Woes')
 
+
 # two_columns {{{1
 def two_columns(col1, col2, width=16, indent=True):
     indent = '    '
     if len(col1) > width:
         return '%s%s\n%s%s%s' % (
-            indent, col1, indent, '  '+width*' ', col2
+            indent, col1, indent, '  ' + width * ' ', col2
         )
     else:
         return '%s%-*s  %s' % (indent, width, col1, col2)
+
 
 # error_source {{{1
 def error_source():

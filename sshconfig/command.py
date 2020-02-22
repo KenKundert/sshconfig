@@ -16,24 +16,24 @@
 
 
 # Imports {{{1
-from .core import Hosts
+import sys
+from textwrap import dedent
+
+import arrow
+from docopt import docopt
+
+from inform import Error, columns, display, full_stop, narrate, output
+
 from .preferences import (
     DATE_FORMAT,
     DEFAULT_COMMAND,
-    SSH_HEADER,
     SSH_DEFAULTS,
+    SSH_HEADER,
     SSH_HOSTS,
     SSH_OVERRIDES,
 )
 from .sshconfig import NetworkEntry
 from .utilities import two_columns
-from inform import Error, columns, display, full_stop, narrate, output
-from docopt import docopt
-from shlib import set_prefs
-set_prefs(use_inform=True, log_cmd=True)
-from textwrap import dedent
-import arrow
-import sys
 
 
 # Utilities {{{1
@@ -41,16 +41,16 @@ import sys
 def title(text):
     return full_stop(text.capitalize())
 
+
 # Command base class {{{1
 class Command(object):
-
     @classmethod
     def commands(cls):
         for cmd in cls.__subclasses__():
-            if hasattr(cmd, 'NAMES'):
+            if hasattr(cmd, "NAMES"):
                 yield cmd
             for sub in cmd.commands():
-                if hasattr(sub, 'NAMES'):
+                if hasattr(sub, "NAMES"):
                     yield sub
 
     @classmethod
@@ -65,12 +65,12 @@ class Command(object):
         for command in cls.commands():
             if name in command.NAMES:
                 return command, command.NAMES[0]
-        raise Error('unknown command.', culprit=name)
+        raise Error("unknown command.", culprit=name)
 
     @classmethod
     def execute(cls, name, args, settings, options):
-        if hasattr(cls, 'run'):
-            narrate('running {} command'.format(name))
+        if hasattr(cls, "run"):
+            narrate("running {} command".format(name))
             exit_status = cls.run(name, args if args else [], settings, options)
             return 0 if exit_status is None else exit_status
 
@@ -78,8 +78,8 @@ class Command(object):
     def summarize(cls, width=16):
         summaries = []
         for cmd in Command.commands_sorted():
-            summaries.append(two_columns(', '.join(cmd.NAMES), cmd.DESCRIPTION))
-        return '\n'.join(summaries)
+            summaries.append(two_columns(", ".join(cmd.NAMES), cmd.DESCRIPTION))
+        return "\n".join(summaries)
 
     @classmethod
     def get_name(cls):
@@ -87,86 +87,94 @@ class Command(object):
 
     @classmethod
     def help(cls):
-        text = dedent("""
+        text = dedent(
+            """
             {title}
 
             {usage}
-        """).strip()
+        """
+        ).strip()
 
-        return text.format(
-            title=title(cls.DESCRIPTION), usage=cls.USAGE,
-        )
+        return text.format(title=title(cls.DESCRIPTION), usage=cls.USAGE)
 
 
 # CreateCommand command {{{1
 class CreateCommand(Command):
-    NAMES = 'create'.split()
-    DESCRIPTION = 'create an SSH config file'
-    USAGE = dedent("""
+    NAMES = "create".split()
+    DESCRIPTION = "create an SSH config file"
+    USAGE = dedent(
+        """
         Usage:
             sshconfig create
-    """).strip()
+        """
+    ).strip()
 
     @classmethod
     def run(cls, command, args, settings, options):
         # read command line
-        cmdline = docopt(cls.USAGE, argv=[command] + args)
+        docopt(cls.USAGE, argv=[command] + args)
 
         # display summary
         display(full_stop(settings.get_summary()))
 
+        # initialize the network
+        settings.initialize_network()
+        # initializing the network must be done before reading the hosts
+        # file as it may try to do network operations
+
         # create SSH config file components
+        # header
         name = settings.network.Name()
         desc = settings.network.description
         if desc:
-            network = f'{name} network -- {desc}'
+            network = f"{name} network -- {desc}"
         else:
-            network = f'{name} network'
+            network = f"{name} network"
         now = arrow.now()
         time = now.format(DATE_FORMAT)
         header = SSH_HEADER.format(
             network=network, time=time, config_dir=settings.config_dir
         )
+
+        # overrides
         overrides = settings.ssh_overrides
         if overrides:
             overrides = SSH_OVERRIDES.format(overrides=overrides)
+
+        # hosts
         settings.read_hosts()
-        hosts = SSH_HOSTS.format(
-            hosts = settings.hosts.output()
-        )
+        hosts = SSH_HOSTS.format(hosts=settings.hosts.output())
+
+        # defaults
         defaults = settings.ssh_defaults
         if defaults:
-            defaults = SSH_DEFAULTS.format(defaults = defaults)
-        output = '\n\n\n'.join(
+            defaults = SSH_DEFAULTS.format(defaults=defaults)
+
+        # combine everything and write as SSH config file
+        contents = "\n\n\n".join(
             section.strip()
             for section in [header, overrides, hosts, defaults]
             if section
         )
-
-        # write SSH config file
-        narrate('writing:', settings.ssh_config_file)
-        settings.ssh_config_file.parent.mkdir(parents=True, exist_ok=True)
-        settings.ssh_config_file.write_text(output)
-        settings.ssh_config_file.chmod(0o600)
-
-        # initialize the network
-        settings.initialize_network()
+        settings.write_ssh_config(contents)
 
 
 # FindCommand command {{{1
 class FindCommand(Command):
-    NAMES = 'find'.split()
-    DESCRIPTION = 'find SSH configurations whose name contains a substring'
-    USAGE = dedent("""
+    NAMES = "find".split()
+    DESCRIPTION = "find SSH configurations whose name contains a substring"
+    USAGE = dedent(
+        """
         Usage:
             sshconfig find <text>
-    """).strip()
+        """
+    ).strip()
 
     @classmethod
     def run(cls, command, args, settings, options):
         # read command line
         cmdline = docopt(cls.USAGE, argv=[command] + args)
-        text = cmdline['<text>']
+        text = cmdline["<text>"]
 
         # display matches
         settings.read_hosts()
@@ -177,12 +185,14 @@ class FindCommand(Command):
 
 # HelpCommand {{{1
 class HelpCommand(Command):
-    NAMES = 'help'.split()
-    DESCRIPTION = 'give information about commands or other topics'
-    USAGE = dedent("""
+    NAMES = "help".split()
+    DESCRIPTION = "give information about commands or other topics"
+    USAGE = dedent(
+        """
         Usage:
             sshconfig help [<topic>]
-    """).strip()
+        """
+    ).strip()
     REQUIRES_EXCLUSIVITY = False
     COMPOSITE_CONFIGS = None
 
@@ -192,59 +202,64 @@ class HelpCommand(Command):
         cmdline = docopt(cls.USAGE, argv=[command] + args)
 
         from .help import HelpMessage
-        HelpMessage.show(cmdline['<topic>'])
+
+        HelpMessage.show(cmdline["<topic>"])
         return 0
 
 
 # SettingsCommand command {{{1
 class SettingsCommand(Command):
-    NAMES = 'settings'.split()
-    DESCRIPTION = 'list settings of chosen configuration'
-    USAGE = dedent("""
+    NAMES = "settings".split()
+    DESCRIPTION = "list settings of chosen configuration"
+    USAGE = dedent(
+        """
         Usage:
             sshconfig settings
-    """).strip()
+        """
+    ).strip()
 
     @classmethod
     def run(cls, command, args, settings, options):
         # read command line
-        cmdline = docopt(cls.USAGE, argv=[command] + args)
+        docopt(cls.USAGE, argv=[command] + args)
 
-        display('Explicit proxies (you can also use SSH hosts as proxies):')
+        display("Explicit proxies (you can also use SSH hosts as proxies):")
         display(columns(sorted(settings.proxies.keys())))
         display()
 
-        display('Locations:')
+        display("Locations:")
         for loc in sorted(settings.locations.keys()):
             display(
-                loc=loc, desc=settings.locations[loc],
-                template=['    {loc}: {desc}', '    {loc}']
+                loc=loc,
+                desc=settings.locations[loc],
+                template=["    {loc}: {desc}", "    {loc}"],
             )
         display()
 
-        display('Networks:')
+        display("Networks:")
         for nw in sorted(NetworkEntry.all_networks(), key=lambda n: n.name()):
             display(
-                nw=nw.name(), desc=nw.desc(),
-                template=['    {nw}: {desc}', '    {nw}']
+                nw=nw.name(), desc=nw.desc(), template=["    {nw}: {desc}", "    {nw}"]
             )
         display()
 
 
 # ShowCommand command {{{1
 class ShowCommand(Command):
-    NAMES = 'show'.split()
-    DESCRIPTION = 'show an SSH configuration'
-    USAGE = dedent("""
+    NAMES = "show".split()
+    DESCRIPTION = "show an SSH configuration"
+    USAGE = dedent(
+        """
         Usage:
             sshconfig show <name>
-    """).strip()
+        """
+    ).strip()
 
     @classmethod
     def run(cls, command, args, settings, options):
         # read command line
         cmdline = docopt(cls.USAGE, argv=[command] + args)
-        name = cmdline['<name>']
+        name = cmdline["<name>"]
 
         # display summary
         display(full_stop(settings.get_summary()))
@@ -255,23 +270,25 @@ class ShowCommand(Command):
         try:
             display(settings.hosts.hosts_by_name[name])
         except KeyError:
-            raise Error('not found.', culprit=name)
+            raise Error("not found.", culprit=name)
 
 
 # VersionCommand {{{1
 class VersionCommand(Command):
-    NAMES = 'version',
-    DESCRIPTION = 'display sshconfig version'
-    USAGE = dedent("""
+    NAMES = ("version",)
+    DESCRIPTION = "display sshconfig version"
+    USAGE = dedent(
+        """
         Usage:
             sshconfig version
-    """).strip()
+        """
+    ).strip()
 
     @classmethod
     def run(cls, command, args, settings, options):
 
         # get the Python version
-        python = 'Python %s.%s.%s' % (
+        python = "Python %s.%s.%s" % (
             sys.version_info.major,
             sys.version_info.minor,
             sys.version_info.micro,
@@ -279,6 +296,5 @@ class VersionCommand(Command):
 
         # output the SSHconfig version along with the Python version
         from .__init__ import __version__, __released__
-        output('sshconfig version: %s (%s) [%s].' % (
-            __version__, __released__, python
-        ))
+
+        output("sshconfig version: %s (%s) [%s]." % (__version__, __released__, python))

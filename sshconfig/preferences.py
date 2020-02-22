@@ -17,29 +17,31 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 # Imports {{{1
-from appdirs import user_config_dir, user_data_dir
 from textwrap import dedent
+
+from appdirs import user_config_dir, user_data_dir
 
 # Preferences {{{1
 # Program defaults {{{2
-PROGRAM_NAME = 'sshconfig'
-DEFAULT_COMMAND = 'create'
-ENCODING = 'utf-8'
-INDENT = '    '
-ARP = '/sbin/arp -a'.split()
-UNKNOWN_NETWORK_NAME = 'unknown'
-DEFAULT_NETWORK_NAME = 'default'
-DATE_FORMAT = 'H:mm A on D MMMM YYYY'
+PROGRAM_NAME = "sshconfig"
+DEFAULT_COMMAND = "create"
+ENCODING = "utf-8"
+INDENT = "    "
+ARP = "/sbin/arp -a".split()
+UNKNOWN_NETWORK_NAME = "unknown"
+DEFAULT_NETWORK_NAME = "default"
+DATE_FORMAT = "H:mm A on D MMMM YYYY"
 
 
 # Paths {{{2
 CONFIG_DIR = user_config_dir(PROGRAM_NAME)
 DATA_DIR = user_data_dir(PROGRAM_NAME)
-LOG_FILE = 'sshconfig.log'
-SSH_CONFIG_FILE = '~/.ssh/config'
+LOG_FILE = "sshconfig.log"
+SSH_CONFIG_FILE = "~/.ssh/config"
 
 # Config file components {{{2
-SSH_HEADER = dedent('''
+SSH_HEADER = dedent(
+    """
     # SSH Configuration for {network!s}
     # Generated at {time!s}
     #
@@ -50,29 +52,36 @@ SSH_HEADER = dedent('''
     #
     #     sshconfig create
     #
-''').strip()
+    """
+).strip()
 
-SSH_DEFAULTS = dedent('''
-        #
-        # GLOBAL DEFAULTS
-        #
+SSH_DEFAULTS = dedent(
+    """
+    #
+    # GLOBAL DEFAULTS
+    #
 
-        {defaults}
-''').strip()
+    {defaults}
+    """
+).strip()
 
 
-SSH_HOSTS = dedent('''
-        #
-        # HOSTS
-        #
+SSH_HOSTS = dedent(
+    """
+    #
+    # HOSTS
+    #
 
-        {hosts}
-''').strip()
+    {hosts}
+    """
+).strip()
 
-SSH_OVERRIDES = dedent('''
-        #
-        # GLOBAL OVERRIDES
-        #
+SSH_OVERRIDES = dedent(
+    """
+    #
+    # GLOBAL OVERRIDES
+    #
 
-        {overrides}
-''').strip()
+    {overrides}
+    """
+).strip()
