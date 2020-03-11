@@ -1233,13 +1233,14 @@ path in each case::
         trusted = False
 
 First a few words about *bastian*.  If *sshconfig* is run with this file on 
-*bastion*, then *local_host_name* will be ``basition` and the IP address for 
+*bastion*, then *local_host_name* will be ``basition`` and the IP address for 
 *bastion* will be set to 127.0.0.1, which is the address a machine assigns to 
 itself. Otherwise, if *sshconfig* is run on one of the *bastion* virtual 
-machine, then gets 192.168.122.1, the address of *bastion* on its internal 
-virtual network.  If it run on a machine on the *work* network outside of 
-*bastion*, it gets the address of *bastion* on *work* network: 10.25.13.4.  
-Finally, for all other machines, the public address is used: 181.78.165.55.
+machine, then *hostname* gets 192.168.122.1, the address of *bastion* on its 
+internal virtual network.  If it run on a machine on the *work* network outside 
+of *bastion*, it gets the address of *bastion* on *work* network: 10.25.13.4.  
+Finally, for all other machines, the public address is used: 181.78.165.55.  
+Thus, in all case the optimal IP address is used.
 
 Now some words about *www* and *mail*, the *basition* virtual machines. Consider 
 *www*. If *sshconfig* is run on *www*, then the hostname is set to 127.0.0.1.  
@@ -1247,12 +1248,13 @@ If it is run on a machine on the *bastion* virtual network, such as *mail*, then
 hostname is set to its address on that network, 192.168.122.172. On any other 
 machine *bastion* is used as a jump host. Normally *www* would be described 
 using a subclass of *Bastion*, which routes all connections to *www* through 
-*bastion*. However, that is not as efficient when on machines that are on the 
-*bastion* virtual network.
+*bastion*.  However, that is not as efficient when on machines that are on the 
+*bastion* virtual network. Thus this approach is a bit more verbose but 
+represent an optimal solution from a performance perspective.
 
 Specifying *trusted* as True on a host results in agent forwarding to be enabled 
-for that host. If you start on the laptop and vist a trusted host, then your SSH 
-agent goes with you, and you can move from a trusted host to any other host 
+for that host. If you start on the laptop and visit a trusted host, then your 
+SSH agent goes with you, and you can move from a trusted host to any other host 
 without typing a passphrase as long as that host accepts a key held in the 
 laptop's agent.  Never declare a host as trusted if you do not trust root on 
 that host.
@@ -1268,7 +1270,7 @@ one or more of your choices is not supported by the dated version of SSH.
 There are two situations that must be addressed. First, when run from a machine 
 with a newer version of of SSH and connecting to a machine with an older version 
 fo SSH, an algorithm must not be required that the older version does not 
-support.  In this case one simply specifies the algoriths suitable for 
+support.  In this case one simply specifies the algorithms suitable for 
 a particular host in the host entry for that host. For example::
 
     class Github(HostEntry):
@@ -1288,7 +1290,7 @@ a particular host in the host entry for that host. For example::
         ])
 
 Second, when running on the machine with the older version of SSH, modern 
-algorithm that are not supported by the older version must not be included in 
+algorithms that are not supported by the older version must not be included in 
 the generated SSH config file.  The following *ssh.conf* file shows how to 
 accomplish this::
 
@@ -1361,7 +1363,7 @@ accomplish this::
     """.format(**locals()))
 
 In this example, the desired algorithms are given first. Then, the algorithms 
-available on the older SSH server are given. These can be found by using ``sss 
+supported by the older SSH server are given. These can be found by using ``sss 
 -Q``, or if you version of SSH is too old to support the ``-Q`` option, they can 
 be found by scouring the *ssh_config* man page. The variable used for the 
 available algorithms (those in all caps) are interpreted by *sshconfig*. Any 
