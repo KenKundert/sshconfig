@@ -1,4 +1,4 @@
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __released__ = "2020-03-11"
 
 from .sshconfig import (

@@ -2,7 +2,7 @@ SSH Config
 ==========
 
 :Author: Ken Kundert
-:Version: 1.3.0
+:Version: 1.3.1
 :Released: 2020-03-11
 
 
@@ -1388,7 +1388,7 @@ Releases
 --------
 
 **Latest development release**:
-    | Version: 1.3.0
+    | Version: 1.3.1
     | Released: 2020-03-11
 
 **1.3 (2020-03-11)**:
