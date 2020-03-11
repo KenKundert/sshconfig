@@ -3,10 +3,10 @@
 # Imports {{{1
 import re
 
-from inform import display
+from inform import display, is_str, warn
 from shlib import to_path
 
-from .preferences import DEFAULT_NETWORK_NAME
+from .preferences import DEFAULT_NETWORK_NAME, SSH_SETTINGS
 from .sshconfig import NetworkEntry
 
 
@@ -22,6 +22,13 @@ class Fields:
     def _format_field(self, field):
         comment_leader = "\n        # "
         key, value, desc = field
+        if key.lower() not in SSH_SETTINGS:
+            warn('unknown SSH setting.', culprit=key)
+        key = SSH_SETTINGS.get(key.lower(), key)
+        if value is True:
+            value = 'yes'
+        elif value is False:
+            value = 'no'
         text = "    {} {}".format(key, value)
         if desc:
             if not isinstance(desc, list):
@@ -59,12 +66,12 @@ class Attributes:
         # Copy attributes while converting to a simple dictionary.
         # It is important that we copy because attributes will be deleted in this
         # function and it is important that this not have side effects.
-        self.attributes = dict(attributes)
+        self.attributes = dict((k.lower(), v) for k, v in attributes.items())
 
     # return the attribute as a tuple containing key, value, desc
     def get(self, key, default=None):
         assert not isinstance(default, tuple)
-        value = self.attributes.pop(key, default)
+        value = self.attributes.pop(key.lower(), default)
         if value is not default:
             if isinstance(value, tuple):
                 assert len(value) == 2
@@ -75,7 +82,7 @@ class Attributes:
 
     # iterate through a list of attributes
     def getall(self, key):
-        values = self.attributes.pop(key, [])
+        values = self.attributes.pop(key.lower(), [])
         for value in values:
             if isinstance(value, tuple):
                 assert len(value) == 2
@@ -86,7 +93,7 @@ class Attributes:
 
     # remove an attribute
     def remove(self, key):
-        self.attributes.pop(key, None)
+        self.attributes.pop(key.lower(), None)
 
     # iterate through remaining attributes
     def remaining(self):
@@ -101,7 +108,7 @@ class Attributes:
 
     # does an attribute exist
     def __contains__(self, key):
-        return key in self.attributes
+        return key.lower() in self.attributes
 
 
 # Hosts Class {{{1
@@ -112,6 +119,7 @@ class Hosts:
         self.proxies = proxies
         self.config_file = settings.ssh_config_file
         self.config_dir = settings.ssh_config_file.parent
+        self.settings = settings
         self.hosts = []
         self.hosts_by_name = {}
 
@@ -221,25 +229,27 @@ class Hosts:
         attribute = attributes.get("identityFile")
         if attribute:
             key, value, desc = attribute
-            filename = to_path(self.config_dir, value)
-            attribute = key, filename, desc
-            fields.append(attribute)
-            # fields.append(('identitiesOnly', 'yes', None))
-            # not sure this is a good idea
-            # causes problems if I copy a config file to a remote machine
-            # that does not have local copies of the keys and instead are
-            # using a forwarded agent.
-            fields.append(("pubkeyAuthentication", "yes", None))
+            file_found = False
+            if is_str(value):
+                value = [value]
+            for filename in value:
+                filepath = to_path(self.config_dir, filename)
+                if filepath.exists():
+                    file_found = True
+                    fields.append((key, filepath, desc))
+            if file_found:
+                fields.append(('identitiesOnly', 'yes', None))
+                fields.append(("pubkeyAuthentication", "yes", None))
+            else:
+                warn('no identity files found.', culprit=name)
 
         # ForwardAgent
-        trusted = attributes.get("trusted")
-        tun_trusted = attributes.get("tun_trusted")
-        attribute = tun_trusted if forwards else trusted
+        attribute = attributes.get("trusted")
         if attribute:
             key, trusted, desc = attribute
         else:
             trusted = False
-        fields.append(("forwardAgent", "yes" if trusted else "no", None))
+        fields.append(("forwardAgent", trusted, None))
         # fields.append(('forwardX11', 'no' if trusted else 'no', None))
 
         # LocalForwards
@@ -294,6 +304,21 @@ class Hosts:
                     "Use %s as global proxy to access %s" % (self.proxy, name),
                 )
             )
+
+        # SSH algorithms
+        def add_algorithms(name, available):
+            if available:
+                attribute = attributes.get(name)
+                if attribute:
+                    key, value, desc = attribute
+                    values = value.split(',')
+                    values = [v for v in values if v in available]
+                    fields.append((key, ','.join(values), desc))
+
+        add_algorithms("ciphers", self.settings.available_ciphers)
+        add_algorithms("macs", self.settings.available_macs)
+        add_algorithms("hostkeyalgorithms", self.settings.available_host_key_algorithms)
+        add_algorithms("kexalgorithms", self.settings.available_kex_algorithms)
 
         # Output any unknown attributes
         for attribute in attributes.remaining():

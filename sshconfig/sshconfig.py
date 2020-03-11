@@ -155,7 +155,11 @@ class HostEntry:
             # Get the hostname and port number
             hostname = my_fields.pop("hostname", cls.name())
             port = my_fields.pop("port", 22)
-            fields = {key: parent_fields[key] for key in KEYS_TO_INHERIT}
+            fields = {
+                key: parent_fields[key]
+                for key in KEYS_TO_INHERIT
+                if key in parent_fields
+            }
             fields.update(
                 {
                     "proxyCommand": (
@@ -163,7 +167,7 @@ class HostEntry:
                         # Above works in most cases, but it uses the ssh config
                         # entry name as %h rather than the hostname, so it fails
                         # when ssh config entry name does not correspond to
-                        # a know host by the proxy host (occurs with forwarding
+                        # a known host by the proxy host (occurs with forwarding
                         # entries).  So instead use the actual specified
                         # hostname.
                         "ssh {} -W {}:{}".format(parent.name(), hostname, port),

@@ -80,6 +80,11 @@ class Settings:
         self.locations = self.settings.get("LOCATIONS", {})
         self.proxies = self.settings.get("PROXIES", {})
 
+        self.available_ciphers = self.settings.get("AVAILABLE_CIPHERS")
+        self.available_macs = self.settings.get("AVAILABLE_MACS")
+        self.available_host_key_algorithms = self.settings.get("AVAILABLE_HOST_KEY_ALGORITHMS")
+        self.available_kex_algorithms = self.settings.get("AVAILABLE_KEX_ALGORITHMS")
+
     # read_hosts() {{{2
     # must be read after port, location, and proxy choices are made
     def read_hosts(self):
@@ -182,12 +187,15 @@ class Settings:
             e.report()
             return
 
-        macs = []
+        gateway_macs = []
+        other_macs = []
         for row in arp_table.split("\n"):
             try:
                 name, ipaddr, at, mac, hwtype, on, interface = row.split()
                 if name == "_gateway":
-                    macs.append(mac)
+                    gateway_macs.append(mac)
+                else:
+                    other_macs.append(mac)
             except ValueError:
                 continue
 
@@ -203,7 +211,7 @@ class Settings:
                 yield network
 
         for network in choose(self.preferred_networks):
-            for mac in macs:
+            for mac in gateway_macs + other_macs:
                 if mac in network.routers:
                     # We are on a known network
                     return network

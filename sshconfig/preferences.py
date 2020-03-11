@@ -85,3 +85,106 @@ SSH_OVERRIDES = dedent(
     {overrides}
     """
 ).strip()
+
+# SSH Settings {{{1
+# ssh_settings {{{2
+ssh_settings = """
+     Host
+     Match
+     AddKeysToAgent
+     AddressFamily
+     BatchMode
+     BindAddress
+     BindInterface
+     CanonicalDomains
+     CanonicalizeFallbackLocal
+     CanonicalizeHostname
+     CanonicalizeMaxDots
+     CanonicalizePermittedCNAMEs
+     CASignatureAlgorithms
+     CertificateFile
+     ChallengeResponseAuthentication
+     CheckHostIP
+     Ciphers
+     ClearAllForwardings
+     Compression
+     ConnectionAttempts
+     ConnectTimeout
+     ControlMaster
+     ControlPath
+     ControlPersist
+     DynamicForward
+     EnableSSHKeysign
+     EscapeChar
+     ExitOnForwardFailure
+     FingerprintHash
+     ForwardAgent
+     ForwardX11
+     ForwardX11Timeout
+     ForwardX11Trusted
+     GatewayPorts
+     GlobalKnownHostsFile
+     GSSAPIAuthentication
+     GSSAPIClientIdentity
+     GSSAPIDelegateCredentials
+     GSSAPIKeyExchange
+     GSSAPIRenewalForcesRekey
+     GSSAPIServerIdentity
+     GSSAPITrustDns
+     GSSAPIKexAlgorithms
+     HashKnownHosts
+     HostbasedAuthentication
+     HostbasedKeyTypes
+     HostKeyAlgorithms
+     HostKeyAlias
+     Hostname
+     IdentitiesOnly
+     IdentityAgent
+     IdentityFile
+     IgnoreUnknown
+     Include
+     IPQoS
+     KbdInteractiveAuthentication
+     KbdInteractiveDevices
+     KexAlgorithms
+     LocalCommand
+     LocalForward
+     LogLevel
+     MACs
+     NoHostAuthenticationForLocalhost
+     NumberOfPasswordPrompts
+     PasswordAuthentication
+     PermitLocalCommand
+     PKCS11Provider
+     Port
+     ProxyCommand
+     ProxyJump
+     ProxyUseFdpass
+     PubkeyAcceptedKeyTypes
+     PubkeyAuthentication
+     RekeyLimit
+     RemoteCommand
+     RemoteForward
+     RequestTTY
+     RevokedHostKeys
+     SendEnv
+     ServerAliveCountMax
+     ServerAliveInterval
+     SetEnv
+     StreamLocalBindMask
+     StreamLocalBindUnlink
+     StrictHostKeyChecking
+     SyslogFacility
+     TCPKeepAlive
+     Tunnel
+     TunnelDevice
+     UpdateHostKeys
+     User
+     UserKnownHostsFile
+     VerifyHostKeyDNS
+     VisualHostKey
+     XAuthLocation
+""".split()
+
+# SSH_SETTINGS {{{2
+SSH_SETTINGS = {o.lower(): o for o in ssh_settings}
