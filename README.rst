@@ -789,7 +789,7 @@ An example of many of these features::
        localForward = [
            ('30025 localhost:25',  "Mail - SMTP"),
            ('30143 localhost:143', "Mail - IMAP"),
-           ('34190 localhost:4190', "Mail - Seive"),
+           ('34190 localhost:4190', "Mail - Sieve"),
            ('39100 localhost:9100', "Printer"),
            (VNC(lclDispNum=1, rmtDispNum=12), "VNC"),
        ]
@@ -1234,8 +1234,8 @@ path in each case::
         hostname = '109.142.233.168'
         trusted = False
 
-First a few words about *bastian*.  If *sshconfig* is run with this file on 
-*bastion*, then *local_host_name* will be ``basition`` and the IP address for 
+First a few words about *bastion*.  If *sshconfig* is run with this file on 
+*bastion*, then *local_host_name* will be ``bastion`` and the IP address for 
 *bastion* will be set to 127.0.0.1, which is the address a machine assigns to 
 itself. Otherwise, if *sshconfig* is run on one of the *bastion* virtual 
 machine, then *hostname* gets 192.168.122.1, the address of *bastion* on its 
@@ -1244,7 +1244,7 @@ of *bastion*, it gets the address of *bastion* on *work* network: 10.25.13.4.
 Finally, for all other machines, the public address is used: 181.78.165.55.  
 Thus, in all case the optimal IP address is used.
 
-Now some words about *www* and *mail*, the *basition* virtual machines. Consider 
+Now some words about *www* and *mail*, the *bastion* virtual machines. Consider 
 *www*. If *sshconfig* is run on *www*, then the hostname is set to 127.0.0.1.  
 If it is run on a machine on the *bastion* virtual network, such as *mail*, then 
 hostname is set to its address on that network, 192.168.122.172. On any other 
@@ -1395,7 +1395,7 @@ Releases
    - Add available SSH algorithms filtering.
    - Make SSH settings case insensitive.
    - Added shared config files examples.
-   - Refine *identifyFile* behavior.
+   - Refine *identityfile* behavior.
    - Eliminate *tun_trusted*.
 
 **1.2 (2020-01-07)**:
