@@ -1179,31 +1179,28 @@ path in each case::
 
     class WWW(HostEntry):
         description = 'Web server',
+        hostname = '192.168.122.172'
         if local_host_name == 'www':
             hostname = '127.0.0.1'
-        elif get_network_name() == 'bastion':
-            hostname = '192.168.122.172'
-        else:
+        elif get_network_name() != 'bastion':
             ProxyJump = 'bastion'
         trusted = True
 
     class Mail(HostEntry):
         description = 'Mail server',
+        hostname = '192.168.122.173'
         if local_host_name == 'mail':
             hostname = '127.0.0.1'
-        elif get_network_name() == 'bastion':
-            hostname = '192.168.122.173'
-        else:
+        elif get_network_name() != 'bastion':
             ProxyJump = 'bastion'
         trusted = True
 
     class Dump(HostEntry):
         description = 'Backups server',
+        hostname = '10.25.13.27',
         if local_host_name == 'dump':
             hostname = '127.0.0.1'
-        elif get_network_name() == 'work':
-            hostname = '10.25.13.27',
-        else:
+        elif get_network_name() != 'work':
             ProxyJump = 'bastion'
         trusted = True
 
@@ -1376,6 +1373,9 @@ are only defined on the older hosts. That is why this section is embedded in
 a conditional that is only executed when if local_host_name is either ``www`` or
 ``mail``. These are the hosts with the old version of SSH.
 
+One more thing to look out for when using older versions of SSH; they may not 
+support the *proxyJump* setting. You can generally use ``ProxyCommand "ssh 
+<jumphost> -W %h:%p"` instead.
 
 Related Software
 ----------------
