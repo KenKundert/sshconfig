@@ -1153,7 +1153,7 @@ three places and switches between them as I move around. Generally the IP
 address of *my laptop* is assigned dynamically.
 
 .. image:: network-map.svg
-    :width: 75%
+    :width: 50%
     :align: center
 
 The following *hosts.conf* file can be used to access these hosts, using optimal 
