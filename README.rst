@@ -1382,3 +1382,22 @@ Related Software
 
 `AddSSHKeys <https://github.com/KenKundert/addsshkeys>`_ is a Python utility 
 that allows you to add all of your SSH keys to your agent in one go.
+
+
+Releases
+--------
+
+**Latest development release**:
+    | Version: 1.3.0
+    | Released: 2020-03-11
+
+**1.3 (2020-03-11)**:
+   - Add available SSH algorithms filtering.
+   - Make SSH settings case insensitive.
+   - Added shared config files examples.
+   - Refine *identifyFile* behavior.
+   - Eliminate *tun_trusted*.
+
+**1.2 (2020-01-07)**:
+   - Configuration is now external to the program source code (it is now in 
+     ``~/.config/sshconfig``).
