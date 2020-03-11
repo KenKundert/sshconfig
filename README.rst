@@ -411,7 +411,10 @@ are intercepted and used by *sshconfig*. They are:
 *trusted*:
    Indicates that the host should be trusted (it is fully under your
    control, no untrusted parties have root access).  This enables agent
-   forwarding will be configured for host.
+   forwarding for the host.  If you are using agent forwarding, then it is 
+   possible for someone with root permissions to access and use your agent. So 
+   you should only mark a host as trusted if you trust the individuals that have 
+   administrative access on that machine.
 
 *guests*:
    A list of machines that are accessed using this host as a proxy.
@@ -916,7 +919,6 @@ For example::
    class Jupiter(Farm):
        description = "128GB Compute Server"
        hostname = 'jupiter'
-       trusted = True
        remoteForward = [
            ('14443 localhost:22', "Reverse SSH tunnel used by sshfs"),
        ]
@@ -1132,7 +1134,7 @@ hosts.
 Each host is trusted and the key is loaded into the SSH agent on the client.  
 Access to the key as you move from host to host is provided by agent forwarding.  
 Use of the *identityFile* allows you to limit the keys to be considered for each 
-host but requires that the specified files exist on each hope.  Specifying the 
+host but requires that the specified files exist on each host.  Specifying the 
 public keys means that you can keep your private key on the client; you do not 
 need to copy it to all the hosts that you use.
 
