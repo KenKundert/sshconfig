@@ -534,7 +534,7 @@ In this next example, we customize the proxy command based on the port chosen::
 An entry such as this would be used if sshd is configured to directly accept 
 traffic on port 22, and Apache on the same server is configured to act as 
 a proxy for ssh on port 80 (see `SSH via HTTP 
-<http://www.nurdletech.com/linux-notes/ssh/via-http.html>`_.
+<http://www.nurdletech.com/linux-notes/ssh/via-http.html>`_).
 
 If you prefer, you can use proxytunnel rather than socat in the proxy command::
 
@@ -1376,6 +1376,40 @@ a conditional that is only executed when if local_host_name is either ``www`` or
 One more thing to look out for when using older versions of SSH; they may not 
 support the *proxyJump* setting. You can generally use ``ProxyCommand "ssh 
 <jumphost> -W %h:%p"` instead.
+
+
+Accessing the Client
+""""""""""""""""""""
+
+Assume that you have logged into your laptop, the client, and used it to access 
+a server.  On the server you may need an SSH host entry that gets you back to 
+the client. For example, you may have Git or Mercural repositories on you laptop 
+that you need to pull from.  To address you need two things. First, you need to 
+set up a reverse tunnel that allows you to access the SSH server on your laptop 
+from the server, and two you need a SSH host entry on the server that uses that 
+tunnel to reach your laptop.  The first is provided by the *remoteForward* on 
+this example of the *sshconfig* host entry for the server::
+
+    class Dev(HostEntry):
+        description = "Development server"
+        hostname = '192.168.122.17'
+        remoteForward = [
+            ('2222 localhost:22', "Reverse SSH tunnel used by Mercurial"),
+        ]
+
+The second is required by adding a *sshconfig* host entry for the client machine 
+as seen from the server::
+
+    class Client(HostEntry):
+        description = "used for reverse tunnels back to the client host"
+        hostname = 'localhost'
+        port = 2222
+        StrictHostKeyChecking = False
+
+Now your Git and Mercurial repositories use *client* as the name for the 
+repository host.  The *StrictHostKeyChecking* is only needed if their might be 
+multiple clients
+
 
 Related Software
 ----------------
