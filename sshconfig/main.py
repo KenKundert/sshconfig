@@ -2,7 +2,7 @@
 """
 Generate SSH Config File
 
-Creates an ssh config file that is specifically tailored to the current network
+Creates an SSH config file that is specifically tailored to the current network
 situation.
 
 Usage:
@@ -13,18 +13,16 @@ Options:
     -n NETWORK, --network NETWORK     specifies the network
     -p PORTS, --ports PORTS           specifies list of available ports
     -P NAME, --proxy NAME             specifies the global proxy
-    -q, --quiet                       suppress optional output.
+    -q, --quiet                       suppress optional output
 
 Specify the list of available ports as a comma separated list (no spaces). For
 example, --ports=80,443.
 
 Normally the network is determined automatically and need not be specified.
 
-Commands:
-{commands}
-
-Use 'sshconfig help <command>' for information on a specific command.
-Use 'sshconfig help' for list of available help topics.
+Run 'sshconfig help <command>' for information on a specific command.
+Run 'sshconfig help' for list of available help topics.
+Run 'sshconfig available' to see available choices for proxies, locations, and networks.
 """
 
 # License {{{1

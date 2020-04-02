@@ -6,20 +6,6 @@ SSH Config
 :Released: 2020-03-11
 
 
-Installation
-------------
-
-Requires Python3.6 or newer.
-
-You can download and install the latest
-stable version of the code from `PyPI <https://pypi.python.org>`_ using::
-
-    pip3 install --user sshconfig
-
-You can find the latest development version of the source code on
-`Github <https://github.com/KenKundert/sshconfig>`_.
-
-
 Introduction
 ------------
 
@@ -60,3 +46,84 @@ The following situations are supported:
 #. The entire application, including the configuration files, are Python code, 
    so you have considerable freedom to change the configuration based on things 
    like the name of the machine or the user when generating the SSH config file.
+
+
+Trivial Configuration
+---------------------
+
+The hosts that you would like to connect to are described in the hosts.conf 
+file.  A very simple hosts.conf file would look like this::
+
+   from sshconfig import HostEntry
+
+   class Zeebra(HostEntry):
+       user = 'herbie'
+       hostname = 'zeebra.he.net'
+
+Hosts are described by directly subclassing HostEntry.  Attributes are added 
+that are generally converted to fields in the SSH config file.
+
+The contents of ~/.ssh/config are replaced when you run::
+
+   sshconfig
+
+The above hosts.conf file is converted into the following SSH config file::
+
+   # SSH Configuration for unknown network
+   # Generated at 1:04 PM on 22 July 2014.
+
+   #
+   # HOSTS
+   #
+
+   host zeebra
+       user herbie
+       hostname zeebra.he.net
+       forwardAgent no
+
+The transformation between a host entry in the hosts.conf file and the SSH 
+config file could be affected by the network you are on and any command line 
+options that are specified to *sshconfig*, but in this case it is not. Notice 
+that the class name is converted to lower case when creating the hostname.
+
+
+Installation Requirements
+-------------------------
+
+You can download and install the latest
+stable version of the code from `PyPI <https://pypi.python.org>`_ using::
+
+    pip3 install --user sshconfig
+
+You can find the latest development version of the source code on
+`Github <https://github.com/KenKundert/sshconfig>`_.
+
+Requires in Python3.6 or later.
+
+
+Related Software
+----------------
+
+`AddSSHKeys <https://github.com/KenKundert/addsshkeys>`_ is a Python utility
+that allows you to add all of your SSH keys to your agent in one go.
+
+
+Issues
+------
+
+Please ask questions or report problems on
+`Github Issues <https://github.com/KenKundert/sshconfig/issues>`_.
+
+
+Contents
+--------
+
+.. toctree::
+   :maxdepth: 1
+
+   commands
+   configuring
+   examples
+   releases
+
+*  :ref:`genindex`

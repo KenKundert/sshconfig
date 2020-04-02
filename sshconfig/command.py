@@ -162,7 +162,7 @@ class CreateCommand(Command):
 # FindCommand command {{{1
 class FindCommand(Command):
     NAMES = "find".split()
-    DESCRIPTION = "find SSH configurations whose name contains a substring"
+    DESCRIPTION = "find SSH host configurations whose names contains a substring"
     USAGE = dedent(
         """
         Usage:
@@ -207,14 +207,14 @@ class HelpCommand(Command):
         return 0
 
 
-# SettingsCommand command {{{1
-class SettingsCommand(Command):
-    NAMES = "settings".split()
-    DESCRIPTION = "list settings of chosen configuration"
+# AvailableCommand command {{{1
+class AvailableCommand(Command):
+    NAMES = "available".split()
+    DESCRIPTION = "list available choices for command line options"
     USAGE = dedent(
         """
         Usage:
-            sshconfig settings
+            sshconfig available
         """
     ).strip()
 
@@ -247,7 +247,7 @@ class SettingsCommand(Command):
 # ShowCommand command {{{1
 class ShowCommand(Command):
     NAMES = "show".split()
-    DESCRIPTION = "show an SSH configuration"
+    DESCRIPTION = "show an SSH host configuration"
     USAGE = dedent(
         """
         Usage:
