@@ -9,7 +9,7 @@ with open("README.rst", encoding="utf-8") as f:
 
 setup(
     name="sshconfig",
-    version="1.3.1",
+    version="1.3.2",
     author="Ken Kundert",
     author_email="sshconfig@nurdletech.com",
     description="SSH config file generator",

@@ -2,8 +2,8 @@ Releases
 ========
 
 **Latest development release**:
-    | Version: 1.3.1
-    | Released: 2020-03-11
+    | Version: 1.3.2
+    | Released: 2020-04-01
 
 **1.3 (2020-03-11)**:
    - Add available SSH algorithms filtering.

@@ -2,8 +2,8 @@ SSH Config
 ==========
 
 :Author: Ken Kundert
-:Version: 1.3.1
-:Released: 2020-03-11
+:Version: 1.3.2
+:Released: 2020-04-01
 
 
 Introduction
