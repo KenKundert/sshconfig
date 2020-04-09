@@ -64,5 +64,5 @@ The following situations are supported:
 Documentation
 -------------
 
-You can find documentation at `ReadTheDocs <https://sshconfig.readthedocs.io`_.
+You can find documentation at `ReadTheDocs <https://sshconfig.readthedocs.io>`_.
 
