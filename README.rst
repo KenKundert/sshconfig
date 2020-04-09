@@ -66,3 +66,15 @@ Documentation
 
 You can find documentation at `ReadTheDocs <https://sshconfig.readthedocs.io>`_.
 
+
+Issues
+------
+
+Please ask questions or report problems on
+`Github Issues <https://github.com/KenKundert/sshconfig/issues>`_.
+
+
+Contributions
+-------------
+
+Contributions in the form of pull requests are welcome.
