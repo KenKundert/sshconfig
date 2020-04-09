@@ -60,3 +60,9 @@ The following situations are supported:
 #. The entire application, including the configuration files, are Python code, 
    so you have considerable freedom to change the configuration based on things 
    like the name of the machine or the user when generating the SSH config file.
+
+Documentation
+-------------
+
+You can find documentation at `ReadTheDocs <https://sshconfig.readthedocs.io`_.
+
