@@ -5,6 +5,9 @@ Releases
     | Version: 1.3.3
     | Released: 2020-04-09
 
+**2.0 (2020-04-16)**:
+   - Improve documentation.
+
 **1.3 (2020-03-11)**:
    - Add available SSH algorithms filtering.
    - Make SSH settings case insensitive.
