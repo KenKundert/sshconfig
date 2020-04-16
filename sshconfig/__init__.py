@@ -1,5 +1,5 @@
-__version__ = "1.3.3"
-__released__ = "2020-04-09"
+__version__ = "2.0.0"
+__released__ = "2020-04-16"
 
 from .sshconfig import (
     VNC,
