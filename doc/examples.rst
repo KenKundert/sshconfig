@@ -180,12 +180,12 @@ path in each case:
 First a few words about *bastion*.  If *sshconfig* is run with this file on 
 *bastion*, then *local_host_name* will be ``bastion`` and the IP address for 
 *bastion* will be set to 127.0.0.1, which is the address a machine assigns to 
-itself. Otherwise, if *sshconfig* is run on one of the *bastion* virtual 
-machine, then *hostname* gets 192.168.122.1, the address of *bastion* on its 
-internal virtual network.  If it run on a machine on the *work* network outside 
-of *bastion*, it gets the address of *bastion* on *work* network: 10.25.13.4.  
+itself. Otherwise, if *sshconfig* is run on one of *bastion*'s virtual machines, 
+then *hostname* becomes 192.168.122.1, the address of *bastion* on its internal 
+virtual network.  If it run on a machine on the *work* network outside of 
+*bastion*, it gets the address of *bastion* on *work* network: 10.25.13.4.  
 Finally, for all other machines, the public address is used: 181.78.165.55.  
-Thus, in all case the optimal IP address is used.
+Thus, in all cases the optimal IP address is used.
 
 Now some words about *www* and *mail*, the *bastion* virtual machines. Consider 
 *www*. If *sshconfig* is run on *www*, then the hostname is set to 127.0.0.1.  
@@ -334,10 +334,10 @@ Accessing the Client
 Assume that you have logged into your laptop, the client, and used it to access 
 a server.  On the server you may need an SSH host entry that gets you back to 
 the client. For example, you may have Git or Mercurial repositories on you 
-laptop that you need to pull from.  To address you need two things. First, you 
-need to set up a reverse tunnel that allows you to access the SSH server on your 
-laptop from the server, and two you need a SSH host entry on the server that 
-uses that tunnel to reach your laptop.  The first is provided by the 
+laptop that you need to pull from.  To address this you need two things. First, 
+you need to set up a reverse tunnel that allows you to access the SSH server on 
+your laptop from the server, and two you need a SSH host entry on the server 
+that uses that tunnel to reach your laptop.  The first is provided by the 
 *remoteForward* on this example of the *sshconfig* host entry for the server:
 
 .. code-block:: python
@@ -349,7 +349,7 @@ uses that tunnel to reach your laptop.  The first is provided by the
             ('2222 localhost:22', "Reverse SSH tunnel used by Mercurial"),
         ]
 
-The second is required by adding a *sshconfig* host entry for the client machine 
+The second is provided by adding a *sshconfig* host entry for the client machine 
 as seen from the server:
 
 .. code-block:: python
