@@ -14,6 +14,7 @@ setup(
     author_email="sshconfig@nurdletech.com",
     description="SSH config file generator",
     long_description=readme,
+    long_description_content_type='text/x-rst',
     url="https://sshconfig.readthedocs.io",
     download_url="https://github.com/kenkundert/sshconfig/tarball/master",
     license="GPLv3+",
