@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+from shlib import lsf, Run, set_prefs
+from inform import Error
+set_prefs(use_inform=True)
+
+for py_file in lsf(select='*.py'):
+    print(str(py_file))
+    cmd = ['python3', py_file]
+    try:
+        Run(cmd, 'soEW')
+    except Error as e:
+        e.report()

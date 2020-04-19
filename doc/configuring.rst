@@ -1,11 +1,11 @@
-Configuration
--------------
+Configuring
+-----------
 
 The configuration of *sshconfig* involves several files contained in 
 ~/.config/sshconfig directory. Specifically, hosts.conf, locations.conf, 
 networks.conf, proxies.conf, and ssh.conf.
 
-Networks.conf
+networks.conf
 """""""""""""
 
 This file defines your known networks. It need not define all the networks you 
@@ -254,6 +254,8 @@ A typical proxies.conf file might look like:
        tunnelr_proxy = 'ssh tunnelr -W %h:%p',
    )
 
+Once defined, these proxies can be activated from the command line.
+
 All of these entries are optional.  The following attributes are interpreted.
 
 *PROXIES*:
@@ -267,6 +269,111 @@ All of these entries are optional.  The following attributes are interpreted.
    this proxyCommand by default.  The only benefit that adding this entry to 
    PROXIES provides is that *tunnelr_proxy* is listed in the available proxies 
    by *sshconfig settings*.
+
+Once the available proxies have been specified in *PROXIES*, you can activate it 
+using the ``--proxy`` (or ``-P``) command line argument to specify the proxy by 
+name.  For example:
+
+.. code-block:: python
+
+   PROXIES = {
+       'work_proxy':   'corkscrew webproxy.ext.workinghard.com 80 %h %p',
+       'school_proxy': 'corkscrew sproxy.fna.learning.edu 1080 %h %p',
+   }
+
+Two HTTP proxies are described, the first capable of bypassing the corporate 
+firewall and the second does the same for the school's firewall. Each is 
+a command that takes its input from stdin and produces its output on stdout.  
+The program `corkscrew <https://github.com/bryanpkc/corkscrew>`_ is designed to 
+proxy a TCP connection through an HTTP proxy.  The first two arguments are the 
+host name and port number of the proxy.  corkscrew connects to the proxy and 
+passes the third and fourth arguments, the host name and port number of desired 
+destination.
+
+There are many alternatives to *corkscrew*.  One is *socat*:
+
+.. code-block:: python
+
+   PROXIES = {
+       'work_proxy':   'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
+       'school_proxy': 'socat - PROXY:sproxy.fna.learning.edu:%h:%p,proxyport=1080',
+   }
+
+Another alternative is `proxytunnel <https://proxytunnel.sourceforge.io>`_:
+
+.. code-block:: python
+
+   PROXIES = {
+       'work_proxy':   'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
+       'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
+   }
+
+For more information on configuring proxies see :ref:`proxies <proxies>`.
+
+When at work, you should generate your SSH config file using::
+
+   sshconfig --proxy=work_proxy
+
+or::
+
+   sshconfig --Pwork_proxy
+
+You can get a list of the pre-configured proxies using::
+
+   sshconfig --available
+
+It is also possible to use SSH hosts as proxies. For example, when at an 
+internet cafe that blocks port 22, you can work around the blockage even if your 
+host only supports 22 using::
+
+   sshconfig --ports=80 --proxy=tunnelr
+
+or::
+
+   sshconfig -p80 --Ptunnelr
+
+Using the --proxy command line argument adds a *proxyCommand* entry to every 
+host that does not already have one (except the host being used as the proxy).  
+In that way, proxies are automatically chained.
+
+Rather than always specifying the proxy by command line, you can specify a proxy 
+on the *NetworkEntry* for you network.  If you do, that proxy will be used by 
+default when on that network for all hosts that are not on that network. A host 
+is said to be on the network if the hostname is specifically given for that 
+network. For example, assume you have a network configured for work:
+
+.. code-block:: python
+
+   class Work(NetworkEntry):
+       # Work network
+       routers = ['78:92:4d:2b:30:c6']
+       proxy = 'work_proxy'
+
+Then assume you have a host that is not configured for that network (Home) and 
+one that is (Farm):
+
+.. code-block:: python
+
+   class Home(HostEntry):
+       description = "Home Server"
+       aliases = ['lucifer']
+       user = 'herbie'
+       hostname = {
+           'home': '192.168.0.1',
+           'default': '74.125.232.64'
+       }
+
+   class Farm(HostEntry):
+       description = "Entry Host to Machine farm"
+       aliases = ['mercury']
+       user = 'herbie'
+       hostname = {
+           'work': '192.168.1.16',
+           'default': '231.91.164.92'
+       }
+
+When on the work network, when you connect to home you will use the proxy and 
+when you connect to farm, you will not.
 
 
 locations.conf
@@ -292,7 +399,7 @@ on your location.
 hosts.conf
 """"""""""
 
-A more typical hosts.conf file generally contains many host specifications.
+A typical hosts.conf file generally contains many host specifications.
 
 You subclass *HostEntry* to specify a host and then add attributes to configure 
 its behavior.  Information you specify is largely just placed in the SSH config 
@@ -889,6 +996,8 @@ whereas jupiter does not). Also, there are two versions, one with port
 forwarding and one without.
 
 
+.. _proxies:
+
 Proxies
 '''''''
 
@@ -898,111 +1007,140 @@ work around these blocks. However, some networks block all ports and force you
 to use a proxy.  Or, if you do have open ports but your host does not accept SSH 
 traffic on those ports, you can sometimes use a proxy to access your host.
 
-Available proxies are specified by adding *PROXIES* in the proxies.conf file.  
-Then, if you would like to use a proxy, you use the --proxy (or -P) command line 
-argument to specify the proxy by name. For example:
+Generally when an SSH client (ex., your laptop) wishes to talk to a server it 
+uses port 22. But you may be behind a firewall that blocks port 22.  Generally 
+firewalls pass a small number of ports, often 80 and 443 because these ports are 
+used by websites. Port 80 is sometimes problematic it carries non-encrypted 
+traffic.  As such, firewalls can examine the traffic and block it if it does not 
+look like normal web traffic. So often we shoot for using port 443, but we shall 
+consider any port that the firewall might allow through. For example, port 53 
+sometimes works when nothing else will (public wifi might block web traffic on 
+ports 80 and 443 until you agree to the terms of service, but allow traffic on 
+port 53).
+
+A proxy server can be helpful if it allows us to connect on a port allowed 
+by the firewall.  Once connected, it would redirect our traffic to port 22 
+on our SSH server.
+
+.. image:: figures/proxy1.svg
+    :width: 80%
+    :align: center
+
+Here the proxy and SSH servers are identified with their IP addresses, but 
+you could also use their hostname instead. The port used by the proxy server 
+is given as *PPP*, and the port used by the SSH server is assumed to be 22. 
+There are different types of proxies available.  For this particular 
+arrangements, the proxy server is generally an HTTP, HTTPS, or SSH proxy.
+
+SSH naturally talks to SSH proxies using its *ProxyJump* directive.  
+Talking to other types of proxies involves the use of helper commands that 
+act as an interface.  In this case the *ProxyCommand* directive is used to 
+specify the desired command.  And there are quite a few of these helper 
+programs.  Specifically, `proxytunnel <https://proxytunnel.sourceforge.io>`_, 
+`corkscrew <https://github.com/bryanpkc/corkscrew>`_, socat, nc, ncat, and ssh 
+itself can be used.  For the situation shown above, any of the following 
+*ProxyCommands* can be used to access the SSH server:
 
 .. code-block:: python
 
-   PROXIES = {
-       'work_proxy':   'corkscrew webproxy.ext.workinghard.com 80 %h %p',
-       'school_proxy': 'corkscrew sproxy.fna.learning.edu 1080 %h %p',
-   }
+    If REMOTE PROXY is HTTP proxy
+    proxyCommand = proxytunnel -q -p MMM.MMM.MMM.MMM:PPP -d NNN.NNN.NNN.NNN:22
+    proxyCommand = socat - PROXY:MMM.MMM.MMM.MMM:NNN.NNN.NNN.NNN:22,proxyport=PPP
+    proxyCommand = corkscrew MMM.MMM.MMM.MMM PPP NNN.NNN.NNN.NNN 22
+    proxyCommand = ncat --proxy MMM.MMM.MMM.MMM:PPP --proxy-type http NNN.NNN.NNN.NNN 22
 
-Two HTTP proxies are described, the first capable of bypassing the corporate 
-firewall and the second does the same for the school's firewall. Each is 
-a command that takes its input from stdin and produces its output on stdout.  
-The program 'corkscrew' is designed to proxy a TCP connection through an HTTP 
-proxy.  The first two arguments are the host name and port number of the proxy.  
-corkscrew connects to the proxy and passes the third and fourth arguments, the 
-host name and port number of desired destination.
+    If REMOTE PROXY is HTTPS proxy
+    proxyCommand = proxytunnel -E -q -p MMM.MMM.MMM.MMM:PPP -d NNN.NNN.NNN.NNN:22
 
-There are many alternatives to corkscrew. One is socat:
+    If REMOTE PROXY is SSH proxy
+    proxyCommand = ssh MMM.MMM.MMM.MMM:PPP -W NNN.NNN.NNN.NNN:22
 
-.. code-block:: python
+In some cases the proxy and the SSH server may be on the same host.
 
-   PROXIES = {
-       'work_proxy':   'socat - PROXY:webproxy.ext.workinghard.com:%h:%p,proxyport=80',
-       'school_proxy': 'socat - PROXY:sproxy.fna.learning.edu:%h:%p,proxyport=1080',
-   }
+.. image:: figures/proxy2.svg
+    :width: 80%
+    :align: center
 
-Another alternative is proxytunnel:
+With this arrangement, the proxy server is generally an HTTP or HTTPS
+proxy and the address of the SSH SERVER, NNN.NNN.NNN.NNN, becomes 127.0.0.1 or 
+simply *localhost*:
 
 .. code-block:: python
 
-   PROXIES = {
-       'work_proxy':   'proxytunnel -q -p webproxy.ext.workinghard.com:80 -d %h:%p',
-       'school_proxy': 'proxytunnel -q -p sproxy.fna.learning.edu:1080 -d %h:%p',
-   }
+    If REMOTE PROXY is HTTP proxy
+    proxyCommand = proxytunnel -q -p MMM.MMM.MMM.MMM:PPP -d localhost:22
+    proxyCommand = socat - PROXY:MMM.MMM.MMM.MMM:localhost:22,proxyport=PPP
+    proxyCommand = corkscrew MMM.MMM.MMM.MMM PPP localhost 22
+    proxyCommand = ncat --proxy MMM.MMM.MMM.MMM:PPP --proxy-type http localhost 22
 
-When at work, you should generate your SSH config file using::
+    If REMOTE PROXY is HTTPS proxy
+    proxyCommand = proxytunnel -E -q -p MMM.MMM.MMM.MMM:PPP -d localhost:22
 
-   sshconfig --proxy=work_proxy
+It may also be that that your client machine has a local proxy that talks to 
+a remote proxy:
 
-or::
+.. image:: figures/proxy3.svg
+    :width: 100%
+    :align: center
 
-   sshconfig --Pwork_proxy
-
-You can get a list of the pre-configured proxies using::
-
-   sshconfig --available
-
-It is also possible to use SSH hosts as proxies. For example, when at an 
-internet cafe that blocks port 22, you can work around the blockage even if your 
-host only supports 22 using::
-
-   sshconfig --ports=80 --proxy=tunnelr
-
-or::
-
-   sshconfig -p80 --Ptunnelr
-
-Using the --proxy command line argument adds a *proxyCommand* entry to every 
-host that does not already have one (except the host being used as the proxy).  
-In that way, proxies are automatically chained. For example, in the example 
-given above *Jupiter* subclasses *Farm*, and so it naturally gets 
-a *proxyCommand* that causes it to be proxied through *Farm*, but *Farm* does 
-not have a *proxyCommand*. By running *sshconfig* with --proxy=tunnelr, *Farm* 
-will get the *proxyCommand* indicating it should proxy through tunnelr, but 
-*Jupiter* retains its original *proxyCommand*.  So when connecting to jupiter 
-a two link proxy chain is used: packets are first sent to tunnelr, which then 
-forwards them to farm, which forwards them to jupiter.
-
-You can specify a proxy on the *NetworkEntry* for you network. If you do, that 
-proxy will be used by default when on that network for all hosts that not on 
-that network. A host is said to be on the network if the hostname is 
-specifically given for that network. For example, assume you have a network 
-configured for work:
+With this arrangement, the local proxy is generally a SOCKS proxy and the 
+remote proxy and the SSH server may be on the same host or not.  In this 
+case it is assumed that the local proxy is running on localhost and talking 
+to the remote proxy, so we only need to tell the client to connect to the local 
+proxy and that it should connect to the SSH server:
 
 .. code-block:: python
 
-   class Work(NetworkEntry):
-       # Work network
-       routers = ['78:92:4d:2b:30:c6']
-       proxy = 'work_proxy'
+    If LOCAL PROXY is SOCKS proxy
+    proxyCommand = nc -x 127.0.0.1:PPPP NNN.NNN.NNN.NNN 22
+    proxyCommand = ncat --proxy 127.0.0.1:PPPP --proxy-type=socks5 NNN.NNN.NNN.NNN 22
 
-Then assume you have a host that is not configured for that network (Home) and 
-one that is (Farm):
+Given this background, here is how you would describe a host that always uses an 
+SSH proxy (this is another alternative to subclassing and guests):
 
 .. code-block:: python
 
-   class Home(HostEntry):
-       description = "Home Server"
-       aliases = ['lucifer']
-       user = 'herbie'
-       hostname = {
-           'home': '192.168.0.1',
-           'default': '74.125.232.64'
-       }
+    class RemoteProxy:
+        hostname = 'MMM.MMM.MMM.MMM'
+        port = PPP
 
-   class Farm(HostEntry):
-       description = "Entry Host to Machine farm"
-       aliases = ['mercury']
-       user = 'herbie'
-       hostname = {
-           'work': '192.168.1.16',
-           'default': '231.91.164.92'
-       }
+    class SSH_Server:
+        hostname = 'NNN.NNN.NNN.NNN'
+        proxyJump = 'remoteproxy'
 
-When on the work network, when you connect to home you will use the proxy and 
-when you connect to farm, you will not.
+Older versions of SSH do not support *proxyJump*, so the *SSH_Server* host can 
+be described using:
+
+.. code-block:: python
+
+    class SSH_Server:
+        hostname = 'NNN.NNN.NNN.NNN'
+        proxyCommand = 'ssh remoteproxy -W %h:%p'
+
+In this case, SSH replaces %h with the specified hostname and %p with the 
+specified port (22 is the default).
+
+If instead, the proxy is a HTTP proxy rather an SSH proxy, you would use one 
+just one host entry and would employ a helper program to act as an adaptor:
+
+.. code-block:: python
+
+    class SSH_Server:
+        hostname = 'NNN.NNN.NNN.NNN'
+        proxyCommand = 'proxytunnel -q -p MMM.MMM.MMM.MMM:PPP -d %h:%p'
+
+To create an host entry that only uses the proxy when necessary, you can make 
+the *proxyCommand* conditional:
+
+.. code-block:: python
+
+    class SSH_Server:
+        hostname = 'NNN.NNN.NNN.NNN'
+        port = ports.choose([22, 80, 443])
+        if port == 80:
+            proxyCommand = 'proxytunnel -q -p MMM.MMM.MMM.MMM:PPP -d %h:22'
+        elif port == 443:
+            proxyCommand = 'proxytunnel -q -E -p MMM.MMM.MMM.MMM:PPP -d %h:22'
+
+With this entry, SSH connects directly to the server if port 22 is chosen, it 
+uses an HTTP proxy for port 80, and it use an HTTPS proxy for port 443.

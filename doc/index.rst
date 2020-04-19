@@ -52,7 +52,9 @@ Trivial Configuration
 ---------------------
 
 The hosts that you would like to connect to are described in the hosts.conf 
-file.  A very simple hosts.conf file would look like this::
+file.  A very simple hosts.conf file would look like this:
+
+.. code-block:: python
 
    from sshconfig import HostEntry
 
@@ -85,6 +87,24 @@ The transformation between a host entry in the hosts.conf file and the SSH
 config file could be affected by the network you are on and any command line 
 options that are specified to *sshconfig*, but in this case it is not. Notice 
 that the class name is converted to lower case when creating the hostname.
+
+In most cases, adding an attribute to the definition of your host simply results 
+in that attribute being added the the SSH configuration, so:
+
+.. code-block:: python
+
+   class Zeebra(HostEntry):
+       user = 'herbie'
+       hostname = 'zeebra.he.net'
+       port = 22022
+
+becomes::
+
+   host zeebra
+       user herbie
+       hostname zeebra.he.net
+       port 22022
+       forwardAgent no
 
 
 Installation Requirements

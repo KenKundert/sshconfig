@@ -98,7 +98,7 @@ that contains *bastion*, *dump* and *my_laptop*. *bastion* contains *www* and
 three places and switches between them as I move around. Generally the IP 
 address of *my laptop* is assigned dynamically.
 
-.. image:: network-map.svg
+.. image:: figures/network-map.svg
     :width: 50%
     :align: center
 
