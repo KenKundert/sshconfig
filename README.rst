@@ -2,8 +2,8 @@ SSH Config
 ==========
 
 :Author: Ken Kundert
-:Version: 2.0.0
-:Released: 2020-04-16
+:Version: 2.0.1
+:Released: 2020-04-18
 
 
 Installation
