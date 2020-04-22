@@ -363,3 +363,26 @@ as seen from the server:
 Now your Git and Mercurial repositories use *client* as the name for the 
 repository host.  The *StrictHostKeyChecking* is only needed if their might be 
 multiple clients
+
+
+SSH via Tor
+"""""""""""
+
+A convenient way to access machines that have no fixed IP address is to 
+configure SSH as a Tor hidden service on that machine as described `here 
+<https://nurdletech.com/linux-notes/ssh/hidden-service.html>`_.  This is helpful 
+because, as long as Tor is running on both machines, it should be reachable from 
+any network anywhere in the world.  Here is a host entry for accessing such 
+a machine:
+
+.. code-block:: python
+
+    class HiddenLaptop(HostEntry):
+        description = "Laptop as Tor hidden service"
+        aliases = 'hl'.split()
+        hostname = '8owgthc4izjjke9sb4qi5dquhbnug4elcnlbv6pkszybvghylryrodad.onion'
+        proxyCommand = 'ncat --proxy 127.0.0.1:9050 --proxy-type socks5 %h %p'
+
+This assumes that you have Tor running on your client machine and it is 
+providing a SOCKS proxy on port 9050, and that SSH is configured as a hidden 
+service and Tor is running on the machine you are trying to access.

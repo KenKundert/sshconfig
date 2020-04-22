@@ -156,7 +156,7 @@ class CreateCommand(Command):
             for section in [header, overrides, hosts, defaults]
             if section
         )
-        settings.write_ssh_config(contents)
+        settings.write_ssh_config(contents + '\n')
 
 
 # FindCommand command {{{1
