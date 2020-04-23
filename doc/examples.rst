@@ -346,6 +346,8 @@ proxy servers, as it can form the SSL/TLS tunnel:
 
 .. code-block:: python
 
+    from sshconfig import get_network_name
+
     class SSH_Server(HostEntry):
         hostname = 'NNN.NNN.NNN.NNN'
         if get_network_name() == 'work':
