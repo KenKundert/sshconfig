@@ -96,7 +96,8 @@ addresses on a network provided by the enclosing box. Thus, *work* has a network
 that contains *bastion*, *dump* and *my_laptop*. *bastion* contains *www* and 
 *mail*, and connects to both *work* and the internet.  *my laptop* shows up in 
 three places and switches between them as I move around. Generally the IP 
-address of *my laptop* is assigned dynamically.
+address of *my laptop* is assigned dynamically (if you want to access 
+*my_laptop* from your servers, see :ref:`tor` below).
 
 .. image:: figures/network-map.svg
     :width: 50%
@@ -391,6 +392,8 @@ be described using:
 In this case, SSH replaces %h with the specified hostname, *NNN.NNN.NNN.NNN*, 
 and %p with the specified port (22 is used if no port is given).
 
+
+.. _tor:
 
 SSH via Tor
 """""""""""
