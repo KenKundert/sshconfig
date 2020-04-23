@@ -13,7 +13,7 @@
     <rect fill="none" height="100" stroke="black" stroke-width="2" width="250" x="-125.0" y="-50.0"/>
   </g>
   <g id="text">
-    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="300.0" y="-5">Local Proxy</text>
+    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="300.0" y="-5">Pass Through Proxy</text>
     <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="300.0" y="19.4">MMM.MMM.MMM.MMM:LPP</text>
   </g>
   <g id="symbol" transform="translate(700.0,0)">

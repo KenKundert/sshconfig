@@ -2,7 +2,7 @@ from svg_schematic import Schematic, Box, Wire, Label, midpoint, shift_y
 
 with Schematic(filename='proxy3.svg', line_width=2, background='none'):
     client = Box(w=5, h=2, name='SSH Client')
-    lproxy = Box(W=client.E, xoff=50, w=5, h=2, name='Local Proxy', value='MMM.MMM.MMM.MMM:LPP')
+    lproxy = Box(W=client.E, xoff=50, w=5, h=2, name='Pass Through Proxy', value='MMM.MMM.MMM.MMM:LPP')
     rproxy = Box(W=lproxy.E, xoff=150, w=5, h=2, name='Remote Proxy', value='NNN.NNN.NNN.NNN:RPP')
     server = Box(W=rproxy.E, xoff=50, w=5, h=2, name='SSH Server', value='localhost:22')
     Box(W=rproxy.W, xoff=-50, w=12.5, h=3, stroke_dasharray="4 4")

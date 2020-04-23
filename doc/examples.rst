@@ -320,13 +320,14 @@ is on the same host as the proxy server.
 
 Another common situation is that your are behind an oppressive corporate 
 firewall that blocks all traffic except that which passes through a specific 
-proxy server.  In this case they often perform deep packet inspection on the 
-traffic in order to discover and block traffic they find undesirable. SSH 
-traffic is often one of their targets.  In this case you can often get through 
-by embedding your SSH traffic in an SSL/TLS tunnel.  Doing so encrypts the 
-traffic and makes it look like normal web traffic, making it impossible to 
-determine the type of traffic.  In this case, a remote proxy is required at the 
-destination to extract the SSH traffic from the SSL/TLS tunnel:
+pass-through proxy server.  In this case they often perform deep packet 
+inspection on the traffic in order to discover and block traffic they find 
+undesirable. SSH traffic is often one of their targets.  In this case you can 
+often get through by embedding your SSH traffic in an SSL/TLS tunnel.  Doing so 
+encrypts the traffic and makes it look like normal web traffic, making it 
+impossible to filter out without also risking filtering out normal web traffic.  
+In this case, a remote proxy is required at the destination to extract the SSH 
+traffic from the SSL/TLS tunnel:
 
 .. image:: figures/proxy3.svg
     :width: 100%
@@ -339,16 +340,20 @@ server already has Apache running, is to use `SSH via HTTP
 <https://nurdletech.com/linux-notes/ssh/via-http.html>`_ on port 443 with 
 SSL/TLS enabled.  Having an active website at the same address and port you are 
 using for SSH is particularly desirable as it makes it seem like you are just 
-accessing the website normally. *ProxyTunnel* is used as the interface to the 
-local proxy server, as it can form the SSL/TLS tunnel:
+accessing the website normally. `ProxyTunnel 
+<https://github.com/proxytunnel/proxytunnel>`_ is used as the interface to the 
+proxy servers, as it can form the SSL/TLS tunnel:
 
 .. code-block:: python
 
     class SSH_Server(HostEntry):
         hostname = 'NNN.NNN.NNN.NNN'
-        port = ports.choose([22, 53, 80, 443])
-        if port in [80, 443]:
-            proxyCommand = 'proxytunnel -E -q -p %h:%p -d localhost:22'
+        if get_network_name() == 'work':
+            proxyCommand = 'proxytunnel -E -q -p MMM.MMM.MMM.MMM:LPP -r %h:RPP -d localhost:%p'
+
+In this example, the pass-through proxy is only used if you are on the *work* 
+network and the remote proxy port, *RPP*, is generally chosen to be 443 to 
+complete the ruse.
 
 In some cases, it may be that the corporate proxy is decrypting, in which case 
 it would be possible for it to use deep packet inspection to determine that you 
