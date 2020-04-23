@@ -1,39 +1,41 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" baseProfile="full" height="100%" version="1.1" viewBox="-127.0,-52.0,956.0,151.0" width="100%">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink" baseProfile="full" height="100%" version="1.1" viewBox="-127.0,-102.0,981.0,251.0" width="100%">
   <defs/>
-  <g id="bkgnd">
-    <rect fill="white" height="151.0" stroke="none" stroke-width="1" width="956.0" x="-127.0" y="-52.0"/>
-  </g>
   <g id="symbol" transform="translate(0,0)">
     <rect fill="none" height="100" stroke="none" width="250" x="-125.0" y="-50.0"/>
-    <rect fill="white" height="100" stroke="black" stroke-width="2" width="250" x="-125.0" y="-50.0"/>
+    <rect fill="none" height="100" stroke="black" stroke-width="2" width="250" x="-125.0" y="-50.0"/>
   </g>
   <g id="text">
     <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="0" y="7.2">SSH Client</text>
   </g>
-  <g id="symbol" transform="translate(350.0,0)">
+  <g id="symbol" transform="translate(400.0,0)">
     <rect fill="none" height="100" stroke="none" width="250" x="-125.0" y="-50.0"/>
-    <rect fill="white" height="100" stroke="black" stroke-width="2" width="250" x="-125.0" y="-50.0"/>
+    <rect fill="none" height="100" stroke="black" stroke-width="2" width="250" x="-125.0" y="-50.0"/>
   </g>
   <g id="text">
-    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="350.0" y="-5">Remote Proxy</text>
-    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="350.0" y="19.4">MMM.MMM.MMM.MMM:PPP</text>
+    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="400.0" y="-5">Remote Proxy</text>
+    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="400.0" y="19.4">MMM.MMM.MMM.MMM:PPP</text>
   </g>
   <g id="symbol" transform="translate(700.0,0)">
     <rect fill="none" height="100" stroke="none" width="250" x="-125.0" y="-50.0"/>
-    <rect fill="white" height="100" stroke="black" stroke-width="2" width="250" x="-125.0" y="-50.0"/>
+    <rect fill="none" height="100" stroke="black" stroke-width="2" width="250" x="-125.0" y="-50.0"/>
   </g>
   <g id="text">
     <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="700.0" y="-5">SSH Server</text>
     <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="700.0" y="19.4">localhost:22</text>
   </g>
+  <g id="symbol" transform="translate(537.5,0)">
+    <rect fill="none" height="150" stroke="none" width="625.0" x="-312.5" y="-75.0"/>
+    <rect fill="none" height="150" stroke="black" stroke-dasharray="4 4" stroke-width="2" width="625.0" x="-312.5" y="-75.0"/>
+  </g>
+  <g id="text"/>
   <g id="wire">
-    <polyline fill="none" points="125.0,0 225.0,0" stroke="black" stroke-linecap="round" stroke-width="2"/>
+    <polyline fill="none" points="125.0,0 275.0,0" stroke="black" stroke-linecap="round" stroke-width="2"/>
   </g>
   <g id="wire">
-    <polyline fill="none" points="475.0,0 575.0,0" stroke="black" stroke-linecap="round" stroke-width="2"/>
+    <polyline fill="none" points="525.0,0 575.0,0" stroke="black" stroke-linecap="round" stroke-width="2"/>
   </g>
-  <g id="symbol" transform="translate(225.0,0)">
+  <g id="symbol" transform="translate(275.0,0)">
     <rect fill="none" height="50" stroke="none" width="50" x="-25.0" y="-25.0"/>
     <polygon fill="black" points="0,0 -30,6.0 -30,-6.0" stroke="none"/>
   </g>
@@ -44,18 +46,18 @@
   </g>
   <g id="text"/>
   <g id="wire">
-    <polyline fill="none" points="175.0,50.0 175.0,-50.0" stroke="black" stroke-dasharray="4 4" stroke-linecap="round" stroke-width="2"/>
+    <polyline fill="none" points="200.0,100.0 200.0,-100.0" stroke="black" stroke-dasharray="4 4" stroke-linecap="round" stroke-width="2"/>
   </g>
-  <g id="symbol" transform="translate(175.0,50.0)">
+  <g id="symbol" transform="translate(200.0,100.0)">
     <rect fill="none" height="50" stroke="none" width="50" x="-25.0" y="-25.0"/>
   </g>
   <g id="text">
-    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="175.0" y="69.4">FW</text>
+    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="200.0" y="119.4">firewall</text>
   </g>
-  <g id="symbol" transform="translate(175.0,70.0)">
+  <g id="symbol" transform="translate(200.0,120.0)">
     <rect fill="none" height="50" stroke="none" width="50" x="-25.0" y="-25.0"/>
   </g>
   <g id="text">
-    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="175.0" y="89.4">blocks 22</text>
+    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="200.0" y="139.4">blocks 22</text>
   </g>
 </svg>

@@ -205,6 +205,210 @@ laptop's agent.  Never declare a host as trusted if you do not trust root on
 that host.
 
 
+Accessing the Client
+""""""""""""""""""""
+
+Assume that you have logged into your laptop, the client, and used it to access 
+a server.  On the server you may need an SSH host entry that gets you back to 
+the client. For example, you may have Git or Mercurial repositories on you 
+laptop that you need to pull from.  To address this you need two things. First, 
+you need to set up a reverse tunnel that allows you to access the SSH server on 
+your laptop from the server, and two you need a SSH host entry on the server 
+that uses that tunnel to reach your laptop.  The first is provided by the 
+*remoteForward* on this example of the *sshconfig* host entry for the server:
+
+.. code-block:: python
+
+    class Dev(HostEntry):
+        description = "Development server"
+        hostname = '192.168.122.17'
+        remoteForward = [
+            ('2222 localhost:22', "Reverse SSH tunnel used by Mercurial"),
+        ]
+
+The second is provided by adding a *sshconfig* host entry for the client machine 
+as seen from the server:
+
+.. code-block:: python
+
+    class Client(HostEntry):
+        description = "used for reverse tunnels back to the client host"
+        hostname = 'localhost'
+        port = 2222
+        StrictHostKeyChecking = False
+
+Now your Git and Mercurial repositories use *client* as the name for the 
+repository host.  The *StrictHostKeyChecking* is only needed if their might be 
+multiple clients
+
+
+.. _proxies:
+
+Access Restrictions
+"""""""""""""""""""
+
+In some situations you may be sitting behind firewalls that prevent direct 
+access to your SSH server. Generally, firewalls allow use of common ports, such 
+as 80 (http), 443 (https), and perhaps 53 (dns).  In this case, you simply 
+configure your SSH server to listen on these ports. This situation is 
+illustrated here:
+
+.. image:: figures/proxy1.svg
+    :width: 50%
+    :align: center
+
+In this case you can simply list the available ports on your host entry and 
+specify the desired port when you run *SSHconfig*:
+
+.. code-block:: python
+
+    class SSH_Server(HostEntry):
+        hostname = 'NNN.NNN.NNN.NNN'
+        port = ports.choose([22, 53, 80, 443])
+
+However, it may be that those ports are already in use. For example, you may 
+have a webserver that is using ports 80 and 443.  In this case it is possible to 
+insert a proxy that allows these ports to be used for web both and SSH traffic.
+
+.. image:: figures/proxy2.svg
+    :width: 80%
+    :align: center
+
+If you use Apache for your webserver, it naturally provides the *CONNECT* 
+feature that allows it to act as its own proxy. See `SSH via HTTP 
+<https://nurdletech.com/linux-notes/ssh/via-http.html>`_ for instructions.
+It is also possible to use `sslh 
+<https://www.ostechnix.com/sslh-share-port-https-ssh>`_ or `HAproxy 
+<https://blog.chmd.fr/ssh-over-ssl-episode-4-a-haproxy-based-configuration.html>`_.
+
+In this case you would specify the proxy using *proxyCommand*. You can either 
+add it directly to your host configuration or you can create a named proxy and 
+specify it when you run *SSHconfig*.  For example, specifying the proxy on your 
+host entry can be done as follows:
+
+.. code-block:: python
+
+    class SSH_Server(HostEntry):
+        hostname = 'NNN.NNN.NNN.NNN'
+        port = ports.choose([22, 53, 80, 443])
+        if port in [80, 443]:
+            proxyCommand = 'corkscrew %h %p localhost 22'
+
+SSH replaces %h with the hostname and %p with the port number. In this case 
+%h becomes *NNN.NNN.NNN.NNN* and %p becomes the chosen port (either 80 or 443).
+
+In this situation, there are a wide variety of programs that can be used to 
+interface with the proxy server. For example:
+
+.. code-block:: python
+
+    proxyCommand = 'proxytunnel -q -p %h:%p -d localhost:22'
+    proxyCommand = 'socat - PROXY:%h:localhost:22,proxyport=%p'
+    proxyCommand = 'corkscrew %h %p localhost 22'
+    proxyCommand = 'ncat --proxy %h:%p --proxy-type http localhost 22'
+
+Those commands all assume you are using an HTTP proxy. If you are using a SOCKS 
+proxy, you can use:
+
+.. code-block:: python
+
+    proxyCommand = 'ncat --proxy MMM.MMM.MMM.MMM:PPPP --proxy-type socks5 %h %p'
+
+where *MMM.MMM.MMM.MMM* is the host name or IP address of you proxy, and *PPPP* 
+is the proxy's port number (in this case I am not assuming that your SSH sever 
+is on the same host as the proxy server.
+
+Another common situation is that your are behind an oppressive corporate 
+firewall that blocks all traffic except that which passes through a specific 
+proxy server.  In this case they often perform deep packet inspection on the 
+traffic in order to discover and block traffic they find undesirable. SSH 
+traffic is often one of their targets.  In this case you can often get through 
+by embedding your SSH traffic in an SSL/TLS tunnel.  Doing so encrypts the 
+traffic and makes it look like normal web traffic, making it impossible to 
+determine the type of traffic.  In this case, a remote proxy is required at the 
+destination to extract the SSH traffic from the SSL/TLS tunnel:
+
+.. image:: figures/proxy3.svg
+    :width: 100%
+    :align: center
+
+There are variety of ways of embedding your SSH traffic in an SSL/TLS tunnel.  
+For example, `stunnel <https://www.stunnel.org>`_ and `HTTP tunnel 
+<http://www.nocrew.org/software/httptunnel.html>`_.  One simple way, if your 
+server already has Apache running, is to use `SSH via HTTP 
+<https://nurdletech.com/linux-notes/ssh/via-http.html>`_ on port 443 with 
+SSL/TLS enabled.  Having an active website at the same address and port you are 
+using for SSH is particularly desirable as it makes it seem like you are just 
+accessing the website normally. *ProxyTunnel* is used as the interface to the 
+local proxy server, as it can form the SSL/TLS tunnel:
+
+.. code-block:: python
+
+    class SSH_Server(HostEntry):
+        hostname = 'NNN.NNN.NNN.NNN'
+        port = ports.choose([22, 53, 80, 443])
+        if port in [80, 443]:
+            proxyCommand = 'proxytunnel -E -q -p %h:%p -d localhost:22'
+
+In some cases, it may be that the corporate proxy is decrypting, in which case 
+it would be possible for it to use deep packet inspection to determine that you 
+are using SSH and block the connection.  At this point, I believe you are out of 
+luck.
+
+Once you have established one SSH connection through the firewall, you can 
+exploit it to get other connections through.  For example:
+
+.. code-block:: python
+
+    class RemoteProxy:
+        hostname = 'MMM.MMM.MMM.MMM'
+        port = PPP
+
+    class SSH_Server:
+        hostname = 'NNN.NNN.NNN.NNN'
+        proxyJump = 'remoteproxy'
+
+In this case, *remoteproxy* is the established SSH connection that pierces the 
+firewall, and *ssh_server* uses *proxyJump* to piggy-back on that connection as 
+its way to pierce the firewall.
+
+Older versions of SSH do not support *proxyJump*, so the *SSH_Server* host can 
+be described using:
+
+.. code-block:: python
+
+    class SSH_Server:
+        hostname = 'NNN.NNN.NNN.NNN'
+        proxyCommand = 'ssh remoteproxy -W %h:%p'
+
+In this case, SSH replaces %h with the specified hostname, *NNN.NNN.NNN.NNN*, 
+and %p with the specified port (22 is used if no port is given).
+
+
+SSH via Tor
+"""""""""""
+
+A convenient way to access machines that have no fixed IP address is to 
+configure SSH as a Tor hidden service on that machine as described `here 
+<https://nurdletech.com/linux-notes/ssh/hidden-service.html>`_.  This is helpful 
+because, as long as Tor is running on both machines and can reach the internet, 
+it should be possible to establish a connection regardless of how deeply either 
+is buried in private networks.  Here is a host entry for accessing such 
+a machine:
+
+.. code-block:: python
+
+    class HiddenLaptop(HostEntry):
+        description = "Laptop as Tor hidden service"
+        aliases = 'hl'.split()
+        hostname = '8owgthc4izjjke9sb4qi5dquhbnug4elcnlbv6pkszybvghylryrodad.onion'
+        proxyCommand = 'ncat --proxy localhost:9050 --proxy-type socks5 %h %p'
+
+This assumes that you have Tor running on your client machine and it is 
+providing a SOCKS proxy on port 9050, and that SSH is configured as a hidden 
+service and Tor is running on the machine you are trying to access.
+
+
 Supporting Hosts with Old Versions of SSH
 """""""""""""""""""""""""""""""""""""""""
 
@@ -328,61 +532,3 @@ support the *proxyJump* setting. You can generally use ``ProxyCommand "ssh
 <jumphost> -W %h:%p"`` instead.
 
 
-Accessing the Client
-""""""""""""""""""""
-
-Assume that you have logged into your laptop, the client, and used it to access 
-a server.  On the server you may need an SSH host entry that gets you back to 
-the client. For example, you may have Git or Mercurial repositories on you 
-laptop that you need to pull from.  To address this you need two things. First, 
-you need to set up a reverse tunnel that allows you to access the SSH server on 
-your laptop from the server, and two you need a SSH host entry on the server 
-that uses that tunnel to reach your laptop.  The first is provided by the 
-*remoteForward* on this example of the *sshconfig* host entry for the server:
-
-.. code-block:: python
-
-    class Dev(HostEntry):
-        description = "Development server"
-        hostname = '192.168.122.17'
-        remoteForward = [
-            ('2222 localhost:22', "Reverse SSH tunnel used by Mercurial"),
-        ]
-
-The second is provided by adding a *sshconfig* host entry for the client machine 
-as seen from the server:
-
-.. code-block:: python
-
-    class Client(HostEntry):
-        description = "used for reverse tunnels back to the client host"
-        hostname = 'localhost'
-        port = 2222
-        StrictHostKeyChecking = False
-
-Now your Git and Mercurial repositories use *client* as the name for the 
-repository host.  The *StrictHostKeyChecking* is only needed if their might be 
-multiple clients
-
-
-SSH via Tor
-"""""""""""
-
-A convenient way to access machines that have no fixed IP address is to 
-configure SSH as a Tor hidden service on that machine as described `here 
-<https://nurdletech.com/linux-notes/ssh/hidden-service.html>`_.  This is helpful 
-because, as long as Tor is running on both machines, it should be reachable from 
-any network anywhere in the world.  Here is a host entry for accessing such 
-a machine:
-
-.. code-block:: python
-
-    class HiddenLaptop(HostEntry):
-        description = "Laptop as Tor hidden service"
-        aliases = 'hl'.split()
-        hostname = '8owgthc4izjjke9sb4qi5dquhbnug4elcnlbv6pkszybvghylryrodad.onion'
-        proxyCommand = 'ncat --proxy 127.0.0.1:9050 --proxy-type socks5 %h %p'
-
-This assumes that you have Tor running on your client machine and it is 
-providing a SOCKS proxy on port 9050, and that SSH is configured as a hidden 
-service and Tor is running on the machine you are trying to access.
