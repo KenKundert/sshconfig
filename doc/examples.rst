@@ -97,7 +97,8 @@ that contains *bastion*, *dump* and *my_laptop*. *bastion* contains *www* and
 *mail*, and connects to both *work* and the internet.  *my laptop* shows up in 
 three places and switches between them as I move around. Generally the IP 
 address of *my laptop* is assigned dynamically (if you want to access 
-*my_laptop* from your servers, see :ref:`tor` below).
+*my_laptop* from your servers, see :ref:`accessing client` and :ref:`tor` 
+below).
 
 .. image:: figures/network-map.svg
     :width: 50%
@@ -206,6 +207,8 @@ laptop's agent.  Never declare a host as trusted if you do not trust root on
 that host.
 
 
+.. _accessing client:
+
 Accessing the Client
 """"""""""""""""""""
 
@@ -258,8 +261,8 @@ illustrated here:
     :width: 50%
     :align: center
 
-In this case you can simply list the available ports on your host entry and 
-specify the desired port when you run *SSHconfig*:
+In this case you simply list the available ports on your host entry and specify 
+the desired port when you run *SSHconfig*:
 
 .. code-block:: python
 
@@ -319,16 +322,30 @@ where *MMM.MMM.MMM.MMM* is the host name or IP address of you proxy, and *PPPP*
 is the proxy's port number (in this case I am not assuming that your SSH sever 
 is on the same host as the proxy server.
 
+If you are using a HTTPS proxy that expects the incoming traffic to be wrapped 
+in an SSL/TLS tunnel, you can use `ProxyTunnel 
+<https://github.com/proxytunnel/proxytunnel>`_:
+
+.. code-block:: python
+
+    class SSH_Server(HostEntry):
+        hostname = 'NNN.NNN.NNN.NNN'
+        port = ports.choose([22, 53, 80, 443])
+        if port == 80:
+            proxyCommand = 'proxytunnel -q -p %h:%p -d localhost:22'
+        elif port == 443:
+            proxyCommand = 'proxytunnel -q -E -p %h:%p -d localhost:22'
+
 Another common situation is that your are behind an oppressive corporate 
 firewall that blocks all traffic except that which passes through a specific 
 pass-through proxy server.  In this case they often perform deep packet 
-inspection on the traffic in order to discover and block traffic they find 
-undesirable. SSH traffic is often one of their targets.  In this case you can 
-often get through by embedding your SSH traffic in an SSL/TLS tunnel.  Doing so 
-encrypts the traffic and makes it look like normal web traffic, making it 
-impossible to filter out without also risking filtering out normal web traffic.  
-In this case, a remote proxy is required at the destination to extract the SSH 
-traffic from the SSL/TLS tunnel:
+inspection on the traffic passing through the proxy in order to discover and 
+block traffic they find undesirable. SSH traffic is often one of their targets.  
+In this case you can often get through by embedding your SSH traffic in an 
+SSL/TLS tunnel.  Doing so encrypts the traffic and makes it look like normal web 
+traffic, making it impossible to filter out without also risking filtering out 
+normal web traffic.  In this case, a remote proxy is required at the destination 
+to extract the SSH traffic from the SSL/TLS tunnel:
 
 .. image:: figures/proxy3.svg
     :width: 100%

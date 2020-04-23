@@ -19,4 +19,4 @@ with Schematic(filename='proxy3.svg', line_width=2, background='none'):
     fw_n = Wire([lproxy.N, shift_y(lproxy.N, -50)], stroke_dasharray="4 4")
     fw_s = Wire([lproxy.S, shift_y(lproxy.S, 50)], stroke_dasharray="4 4")
     Label(C=fw_s.e, kind='none', loc='S', name='firewall')
-    Label(C=fw_s.e, yoff=20, kind='none', loc='S', name='blocks all')
+    Label(C=fw_s.e, yoff=20, kind='none', loc='S', name='blocks all ports')

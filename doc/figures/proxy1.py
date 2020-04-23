@@ -8,4 +8,4 @@ with Schematic(filename='proxy1.svg', line_width=2, background='none'):
     fw = midpoint(client.E, server.W)
     FW = Wire([shift_y(fw, 100), shift_y(fw, -100)], stroke_dasharray="4 4")
     Label(C=FW.b, kind='none', loc='S', name='firewall')
-    Label(C=FW.b, yoff=20, kind='none', loc='S', name='blocks 22')
+    Label(C=FW.b, yoff=20, kind='none', loc='S', name='blocks port 22')

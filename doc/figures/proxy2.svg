@@ -58,6 +58,6 @@
     <rect fill="none" height="50" stroke="none" width="50" x="-25.0" y="-25.0"/>
   </g>
   <g id="text">
-    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="200.0" y="139.4">blocks 22</text>
+    <text fill="black" font-family="sans-serif" font-size="18" text-anchor="middle" x="200.0" y="139.4">blocks port 22</text>
   </g>
 </svg>
