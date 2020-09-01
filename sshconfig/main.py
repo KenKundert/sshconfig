@@ -20,8 +20,8 @@ example, --ports=80,443.
 
 Normally the network is determined automatically and need not be specified.
 
+Run 'sshconfig help' for list of available commands and help topics.
 Run 'sshconfig help <command>' for information on a specific command.
-Run 'sshconfig help' for list of available help topics.
 Run 'sshconfig available' to see available choices for proxies, locations, and networks.
 """
 
