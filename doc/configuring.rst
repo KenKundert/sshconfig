@@ -57,7 +57,8 @@ A typical networks.conf file might look like:
    # another will be chosen at random from the available networks.
    PREFERRED_NETWORKS = ['Work']
 
-All of these entries are optional.
+All of these entries are optional.  Network are searched in the order they are 
+given, which can be used to resolve ambiguities.
 
 Subclassing NetworkEntry creates a network description that is described with 
 the attributes. A subclass will inherit all the attributes of its parent. The 
