@@ -548,7 +548,7 @@ supported by the older SSH server are given. These can be found by using ``sss
 be found by scouring the *ssh_config* man page. The variable used for the 
 available algorithms (those in all caps) are interpreted by *sshconfig*. Any 
 algorithm that is not specified as being available is stripped from a host entry 
-when generating the SSH config file. If you do not specify from these variable, 
+when generating the SSH config file. If you do not specify from these variables, 
 or if they are empty, then no filtering is performed. The available algorithms 
 are only defined on the older hosts. That is why this section is embedded in 
 a conditional that is only executed when if local_host_name is either ``www`` or
