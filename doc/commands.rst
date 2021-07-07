@@ -1,7 +1,7 @@
 Command Reference
 =================
 
-.. _command line options:
+.. _sshconfig command line options:
 
 Common Command Line Arguments
 -----------------------------
@@ -33,7 +33,7 @@ Run ``sshconfig available`` to see available choices for proxies, locations, and
 networks.
 
 
-.. _available command:
+.. _sshconfig available command:
 
 **available** -- Show Available Option Choices
 ----------------------------------------------
@@ -48,7 +48,7 @@ command can be used to refresh your memory on what is available. It simply lists
 out all available choices for each of the three categories.
 
 
-.. _create command:
+.. _sshconfig create command:
 
 **create** -- Create the SSH config file
 ----------------------------------------
@@ -77,7 +77,7 @@ in Tokyo rather than the ones back home::
     sshconfig -l tokyo
 
 
-.. _find command:
+.. _sshconfig find command:
 
 **find** -- Find an SSH host configuration
 ------------------------------------------
@@ -89,7 +89,7 @@ Usage::
     sshconfig find <text>
 
 
-.. _help command:
+.. _sshconfig help command:
 
 **help** -- Show Helpful Information
 ------------------------------------
@@ -105,7 +105,7 @@ Usage::
 Run ``sshconfig help`` for a list of available commands and topics.
 
 
-.. _show command:
+.. _sshconfig show command:
 
 **show** -- Show a SSH Host Configuration
 -----------------------------------------
@@ -119,7 +119,7 @@ show you how the host entry changes based on various options such as
 ``--ports``. This command does not affect your SSH config file.
 
 
-.. _version command:
+.. _sshconfig version command:
 
 **version** -- Show SSHConfig Version
 -------------------------------------
