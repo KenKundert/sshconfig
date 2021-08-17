@@ -4,6 +4,9 @@ SSH Config — SSH Adapts to Your Current Network
 .. image:: https://pepy.tech/badge/sshconfig/month
     :target: https://pepy.tech/project/sshconfig
 
+.. image:: https://img.shields.io/readthedocs/sshconfig.svg
+   :target: https://sshconfig.readthedocs.io/en/latest/?badge=latest
+
 .. image:: https://img.shields.io/pypi/v/sshconfig.svg
     :target: https://pypi.python.org/pypi/sshconfig
 
