@@ -130,7 +130,7 @@ class Hosts:
         if desc:
             header = "# {}\nhost {}".format(desc, names)
         else:
-            header = "host {}s".format(names)
+            header = "host {}".format(names)
         host = "\n".join([header] + fields.render_host())
         self.hosts.append(host)
         for name in names_as_list:
