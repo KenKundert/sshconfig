@@ -136,7 +136,7 @@ proxy:
    The name of the proxy to use by default when this network is active.
 
 In addition to the *NetworkEntry* class definitions, this file may also define 
-*PREFERRED_NETWORKS*.
+*PREFERRED_NETWORKS* and *ARP*.
 
 *PREFERRED_NETWORKS*:
    A list of strings that specify the preferred networks. It is useful if your 
@@ -150,6 +150,12 @@ In addition to the *NetworkEntry* class definitions, this file may also define
    because *Work* and *WorkWireless* would often be expected to be available 
    simultaneously, and *Work* is the wired network and is considerably faster 
    than *WorkWireless*.
+
+*ARP*:
+   Command to use to query the network neighbor cache to determine the network 
+   to which you are connected.  This is settable in the off chance the command 
+   is not located in the standard place.  Normally, it should be set to 
+   "/usr/sbin/arp -a".
 
 
 ssh.conf

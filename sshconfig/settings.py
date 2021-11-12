@@ -79,6 +79,7 @@ class Settings:
         self.preferred_networks = self.settings.get("PREFERRED_NETWORKS", [])
         self.locations = self.settings.get("LOCATIONS", {})
         self.proxies = self.settings.get("PROXIES", {})
+        self.arp = self.settings.get("ARP", ARP)
 
         self.available_ciphers = self.settings.get("AVAILABLE_CIPHERS")
         self.available_macs = self.settings.get("AVAILABLE_MACS")
@@ -181,7 +182,7 @@ class Settings:
     def identify_network(self):
         # get MAC address of gateway
         try:
-            arp = Run(ARP, "sOeW")
+            arp = Run(self.arp, "sOeW")
             arp_table = arp.stdout
         except Error as e:
             e.report()
