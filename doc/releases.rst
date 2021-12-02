@@ -5,6 +5,8 @@ Releases
     | Version: 2.1.1
     | Released: 2021-11-12
 
+   - Make path to arp command user settable.
+
 **2.1 (2021-01-18)**:
    - Improved the documentation.
 
