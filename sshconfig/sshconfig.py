@@ -3,35 +3,74 @@
 # These are used by the user in the conf files.
 
 # Imports {{{1
+from inform import Error, is_str
+from shlib import Run, set_prefs as shlib_set_prefs
 import re
 
 # Globals {{{1
 KEYS_TO_INHERIT = ["user", "identityFile"]
 LOWER_TO_UPPER_TRANSITION = re.compile(r"([a-z])([A-Z])")
+CHOSEN_NETWORK_NAME = None
+FALLBACK_ALGORITHMS = {}
+shlib_set_prefs(use_inform=True)
 
 # Utilities {{{1
-# network_name {{{2
+# set_network_name {{{2
 # called from main with the name of the chosen network
 # allows users to change their configuration based on the active network
-chosen_network_name = None
-
-
 def set_network_name(name):
-    global chosen_network_name
-    chosen_network_name = name.lower()
+    global CHOSEN_NETWORK_NAME
+    CHOSEN_NETWORK_NAME = name.lower()
 
 
+# get_network_name {{{2
 def get_network_name():
     "Returns name of network (lowercase)"
-    return chosen_network_name
+    return CHOSEN_NETWORK_NAME
 
 
 # is_ip_addr {{{2
-ip_addr_ptn = re.compile(r"\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s*\Z")
-
-
 def is_ip_addr(addr):
-    return ip_addr_ptn.match(addr)
+    return re.match(r"\A\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s*\Z", addr)
+
+
+# filter_algorithms {{{2
+def filter_algorithms(name, desired=(), fallback=()):
+    """Filter Algorithms
+
+    Given a desired set of algorithms, this function filters out those that are
+    not available.
+
+    name (str):
+        The class of algorithm to filter.  value must be acceptable to `ssh -Q
+        ⟪name⟫` (see `man ssh`).  Typical value: ciphers, kex, key, mac or sig.
+    desired (str or array):
+        The ordered list of preferred algorithms.
+    fallback (str or array):
+        The ordered list of algorithms to use if no desired algorithms are
+        available.
+    """
+
+    if is_str(desired):
+        desired = desired.replace(',', ' ').split()
+    if is_str(fallback):
+        fallback = fallback.replace(',', ' ').split()
+
+    if not fallback:
+        fallback = FALLBACK_ALGORITHMS.get(name, [])
+    FALLBACK_ALGORITHMS[name] = fallback
+
+    try:
+        ssh = Run(['ssh', '-Q', name], modes='sOEW')
+        available = ssh.stdout.split()
+    except Error as e:
+        # this should only occur on old version of ssh that don't support -Q
+        assert 'option' in e.stderr and 'Q' in e.stderr
+        available = fallback
+
+    filtered = [d for d in desired if d in available]
+
+    return ','.join(filtered if filtered else fallback)
 
 
 # VNC {{{2

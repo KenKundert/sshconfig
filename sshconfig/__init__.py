@@ -5,6 +5,7 @@ from .sshconfig import (
     VNC,
     HostEntry,
     NetworkEntry,
+    filter_algorithms,
     get_network_name,
     is_ip_addr,
     locations,
