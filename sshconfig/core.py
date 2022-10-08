@@ -3,7 +3,7 @@
 # Imports {{{1
 import re
 
-from inform import display, is_str, warn
+from inform import display, indent, is_str, warn
 from shlib import to_path
 
 from .preferences import DEFAULT_NETWORK_NAME, SSH_SETTINGS
@@ -128,9 +128,9 @@ class Hosts:
         names_as_list = [name] + (aliases if aliases else [])
         names = " ".join(names_as_list)
         if desc:
-            header = "# {}\nhost {}".format(desc, names)
+            header = f"{indent(desc.strip(), leader='# ')}\nhost {names}"
         else:
-            header = "host {}".format(names)
+            header = f"host {names}"
         host = "\n".join([header] + fields.render_host())
         self.hosts.append(host)
         for name in names_as_list:
