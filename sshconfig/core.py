@@ -74,7 +74,7 @@ class Attributes:
         value = self.attributes.pop(key.lower(), default)
         if value is not default:
             if isinstance(value, tuple):
-                assert len(value) == 2
+                assert len(value) == 2, value
                 value, desc = value
                 return key, value, desc
             else:

@@ -3,7 +3,7 @@
 # These are used by the user in the conf files.
 
 # Imports {{{1
-from inform import Error, is_str
+from inform import Error, full_stop, is_str
 from shlib import Run, set_prefs as shlib_set_prefs
 import re
 
@@ -236,6 +236,8 @@ class Ports:
             self.available_ports = [int(port) for port in ports.split(",")]
         except AttributeError:
             self.available_ports = ports
+        except ValueError as e:
+            raise Error(full_stop(e))
 
     def not_available(self, port):
         return self.available_ports and port not in self.available_ports
