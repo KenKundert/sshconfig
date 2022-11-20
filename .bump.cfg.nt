@@ -1,6 +1,6 @@
 major: 2
-minor: 1
-patch: 1
+minor: 2
+patch: 0
 revision: 0
 type: release
 files:
@@ -20,3 +20,4 @@ files:
         date: Released
     doc/conf.py:
         version: release
+style: python

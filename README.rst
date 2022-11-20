@@ -15,8 +15,8 @@ SSH Config — SSH Adapts to Your Current Network
 
 
 :Author: Ken Kundert
-:Version: 2.1.1
-:Released: 2021-11-12
+:Version: 2.2
+:Released: 2022-11-19
 
 
 Installation
