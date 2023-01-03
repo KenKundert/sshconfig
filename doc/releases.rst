@@ -8,6 +8,11 @@ Latest development release
     | Released: 2022-11-19
 
 
+2.2 (2022-11-19)
+----------------
+- Make path to arp command user settable.
+
+
 2.1 (2021-01-18)
 ----------------
 - Make path to arp command user settable.
