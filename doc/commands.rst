@@ -42,10 +42,12 @@ Usage::
 
     sshconfig available
 
-The ``--location``, ``--network``, and ``--proxies`` command all take values as 
+The ``--location``, ``--network``, and ``--proxies`` options all take values as 
 arguments that were specified in your configuration files. The *available* 
 command can be used to refresh your memory on what is available. It simply lists 
-out all available choices for each of the three categories.
+out all available choices for each of the three categories.  Specifically, it 
+lists the names and descriptions for all configured locations, networks and 
+proxies.
 
 
 .. _sshconfig create command:
