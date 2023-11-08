@@ -113,8 +113,8 @@ class Attributes:
 
 # Hosts Class {{{1
 class Hosts:
-    def __init__(self, network, proxy, proxies, settings):
-        self.network = network
+    def __init__(self, networks, proxy, proxies, settings):
+        self.networks = networks
         self.proxy = proxy
         self.proxies = proxies
         self.config_file = settings.ssh_config_file
@@ -202,12 +202,17 @@ class Hosts:
                             name, ", ".join(sorted(unknown_networks))
                         )
                     )
-                if self.network in hostnames:
-                    hostname = hostnames[self.network]
-                elif DEFAULT_NETWORK_NAME in hostnames:
-                    hostname = hostnames[DEFAULT_NETWORK_NAME]
+                for hn in hostnames:
+                    if hn in self.networks:
+                        hostname = hostnames[hn]
+                        break
+                # if self.network in hostnames:
+                #    hostname = hostnames[self.network]
                 else:
-                    return
+                    if DEFAULT_NETWORK_NAME in hostnames:
+                        hostname = hostnames[DEFAULT_NETWORK_NAME]
+                    else:
+                        return
                 attribute = key, hostname, desc
             else:
                 hostnames = {}
@@ -237,6 +242,17 @@ class Hosts:
                 if filepath.exists():
                     file_found = True
                     fields.append((key, filepath, desc))
+                        # Do not use filepath because it includes the config_dir
+                        # and so is an absolute path. That prevents the
+                        # generated config file from being copied to another
+                        # users account, which can help with bootstrapping that
+                        # account.  It also results in relative paths being
+                        # used, which give a cleaner config file.
+                        #
+                        # Whoops, I take it all back.  SSH is brain dead in that 
+                        # it needs absolute paths in the config file.  Relative
+                        # paths are relative to the directory where ssh is
+                        # invoked and not relative to the config file itself.
             if file_found:
                 fields.append(('identitiesOnly', 'yes', None))
                 fields.append(("pubkeyAuthentication", "yes", None))
@@ -277,7 +293,7 @@ class Hosts:
 
         # ProxyCommand
         attribute = attributes.get("proxyCommand")
-        network = NetworkEntry.find(self.network)
+        network = NetworkEntry.find(self.networks[0])
         network_proxy = network.proxy if network else None
         if attribute:
             fields.append(attribute)

@@ -24,6 +24,7 @@ from .core import Hosts
 from .preferences import (
     ARP,
     CONFIG_DIR,
+    NMCLI_CONNS,
     SSH_CONFIG_FILE,
     UNKNOWN_NETWORK_NAME,
 )
@@ -80,6 +81,7 @@ class Settings:
         self.locations = self.settings.get("LOCATIONS", {})
         self.proxies = self.settings.get("PROXIES", {})
         self.arp = self.settings.get("ARP", ARP)
+        self.get_nmcli_conns = self.settings.get("NMCLI_CONNS", NMCLI_CONNS)
 
         self.available_ciphers = self.settings.get("AVAILABLE_CIPHERS")
         self.available_macs = self.settings.get("AVAILABLE_MACS")
@@ -89,13 +91,14 @@ class Settings:
     # read_hosts() {{{2
     # must be read after port, location, and proxy choices are made
     def read_hosts(self):
-        set_network_name(self.network.name())
+        set_network_name(self.primary_network.name())
         conf_file = to_path(CONFIG_DIR, "hosts.conf")
         narrate("reading:", conf_file)
         PythonFile(conf_file).run()
 
         # Process each host
-        hosts = Hosts(self.network.name(), self.proxy, self.proxies, self)
+        available_networks = [network.name() for network in self.networks]
+        hosts = Hosts(available_networks, self.proxy, self.proxies, self)
         for host in HostEntry.all_hosts():
             hosts.process(host, forwards=False)
             hosts.process(host, forwards=True)
@@ -103,10 +106,12 @@ class Settings:
 
     # set_network() {{{2
     def set_network(self, given=None):
+        networks = []
         if given:
-            network = NetworkEntry.find(given)
+            network = [NetworkEntry.find(given)]
         if not given:
-            network = self.identify_network()
+            networks = self.identify_networks()
+            network = networks[0] if networks else None
 
         if not network:
 
@@ -114,7 +119,9 @@ class Settings:
                 key = UNKNOWN_NETWORK_NAME
 
             network = NetworkEntry.find(UNKNOWN_NETWORK_NAME)
-        self.network = network
+
+        self.primary_network = network
+        self.networks = networks if networks else [network]
 
         if network.ports:
             ports.available(network.ports)
@@ -142,15 +149,15 @@ class Settings:
 
     # set_proxy() {{{2
     def set_proxy(self, given=None):
-        self.proxy = given if given else self.network.proxy
+        self.proxy = given if given else self.primary_network.proxy
 
     # set_ports() {{{2
     def set_ports(self, given=None):
-        ports.available(given if given else self.network.ports)
+        ports.available(given if given else self.primary_network.ports)
 
     # set_location() {{{2
     def set_location(self, given=None):
-        locations.set_location(given if given else self.network.location)
+        locations.set_location(given if given else self.primary_network.location)
         unknown = locations.unknown_locations(self.locations)
         if unknown:
             warn("the following locations are unknown (add them to LOCATIONS):")
@@ -161,8 +168,8 @@ class Settings:
 
     # get_summary() {{{2
     def get_summary(self):
-        summary = ["Network is", self.network.Name()]
-        network_desc = self.network.description
+        summary = ["Network is", self.primary_network.Name()]
+        network_desc = self.primary_network.description
         if network_desc:
             summary.append("({})".format(network_desc))
         if self.location:
@@ -177,30 +184,12 @@ class Settings:
             summary.append("proxying through {}".format(self.proxy))
         return full_stop(" ".join(summary))
 
-    # identify_network() {{{2
-    # Identifies which network we are on based on arp command
-    def identify_network(self):
-        # get MAC address of gateway
-        try:
-            arp = Run(self.arp, "sOeW")
-            arp_table = arp.stdout
-        except Error as e:
-            e.report()
-            return
+    # identify_networks() {{{2
+    # Identifies which networks are currently available
+    # uses the arp and nmcli commands
+    def identify_networks(self):
 
-        gateway_macs = []
-        other_macs = []
-        for row in arp_table.split("\n"):
-            try:
-                name, ipaddr, at, mac, hwtype, on, interface = row.split()
-                if name == "_gateway":
-                    gateway_macs.append(mac)
-                else:
-                    other_macs.append(mac)
-            except ValueError:
-                continue
-
-        def choose(preferred):
+        def known_networks(preferred):
             # First offer the preferred networks, in order
             for name in preferred:
                 network = NetworkEntry.find(name)
@@ -211,11 +200,45 @@ class Settings:
             for network in NetworkEntry.all_networks():
                 yield network
 
-        for network in choose(self.preferred_networks):
-            for mac in gateway_macs + other_macs:
-                if mac in network.routers:
-                    # We are on a known network
-                    return network
+        # get MAC address of all devices on active networks
+        macs = []
+        try:
+            arp = Run(self.arp, "sOeW")
+            arp_table = arp.stdout
+            for row in arp_table.split("\n"):
+                try:
+                    name, ipaddr, at, mac, hwtype, on, interface = row.split()
+                    macs.append(mac)
+                except ValueError:
+                    continue
+        except Error as e:
+            e.report()
+            return []
+
+        # filter out any network devices that are not routers for known networks
+        networks = [
+            network
+            for network in known_networks(self.preferred_networks)
+            for mac in macs
+            if mac in network.routers
+        ]
+
+        # get SSID of WiFi network
+        # if only on wifi, this will identify the same network already
+        # identified, however this will identify a different network if both a
+        # wired and wireless network is active at the same time
+        try:
+            if self.get_nmcli_conns:
+                nmcli = Run(self.get_nmcli_conns, "sOeW")
+                connections = nmcli.stdout.splitlines()
+                for network in known_networks(self.preferred_networks):
+                    if getattr(network, 'nmcli_connection', None) in connections:
+                        networks.append(network)
+        except Error as e:
+            e.report(codicil="Set nmcli_conns setting to None if nmcli is not available.")
+
+        return list(dict.fromkeys(networks))
+
 
     # write_ssh_config() {{{2
     def write_ssh_config(self, contents):

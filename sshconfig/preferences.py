@@ -28,6 +28,8 @@ DEFAULT_COMMAND = "create"
 ENCODING = "utf-8"
 INDENT = "    "
 ARP = "/usr/sbin/arp -a"
+NMCLI_CONNS = None
+    # use con rather than connection for compatibility with centos6
 UNKNOWN_NETWORK_NAME = "unknown"
 DEFAULT_NETWORK_NAME = "default"
 DATE_FORMAT = "H:mm A on D MMMM YYYY"

@@ -124,10 +124,10 @@ class CreateCommand(Command):
 
         # create SSH config file components
         # header
-        name = settings.network.Name()
-        desc = settings.network.description
+        name = settings.primary_network.Name()
+        desc = settings.primary_network.description
         if desc:
-            network = f"{name} network -- {desc}"
+            network = f"{name} network — {desc}"
         else:
             network = f"{name} network"
         now = arrow.now()
@@ -241,6 +241,7 @@ class AvailableCommand(Command):
             display(
                 nw=nw.name(), desc=nw.desc(), template=["    {nw}: {desc}", "    {nw}"]
             )
+        display("    unknown: a generic unknown network")
         display()
 
 

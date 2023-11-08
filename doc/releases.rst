@@ -7,6 +7,14 @@ Latest development release
     | Version: 2.2
     | Released: 2022-11-19
 
+- Added *nmcli_connection* attribute to the *NetworkEntry* class.
+- Added *NMCLI_CONNS* setting.
+
+Both these changes support the use of secondary networks, meaning that if your 
+machine is connected to multiple networks, you can configure a host so that ssh 
+connects to it directly through a secondary network rather than using the 
+primary gateway.
+
 
 2.2 (2022-11-19)
 ----------------

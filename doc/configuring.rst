@@ -79,6 +79,36 @@ routers:
    A list of MAC addresses for the router that are used to identify the network.  
    To find these, connect to the network and run the /sbin/arp command.
 
+nmcli_connection:
+   The name used by Network Manager to refer to this network.  This is normally 
+   not necessary, however it allows secondary networks to be recognized.  
+   Imagine a laptop that has both an ethernet and a wifi connection on different 
+   networks.  Only one network will be used as a gateway by the laptop, and the 
+   router for that network will be recognized through its MAC address.  Say that 
+   this is the ethernet network.  By adding *nmcli_connection* to the wifi 
+   network and setting it to the SSID of the access point (that is what *nmcli* 
+   uses as the name of the network) you can now access both networks.  Further 
+   imagine that the ethernet network is named ‘work’ and the wifi network is 
+   named ‘home’.  Finally, imagine that a machine named ‘media’ is located on 
+   the ‘home’ network.  If the entry for ‘media’ is given as follows:
+
+   .. code-block:: python
+
+       class Media(HostEntry):
+           description = "Media server"
+           hostname = {
+               'home': '192.168.0.24',
+               'default': 'terminus.home',
+           }
+
+   If you only provided *routers*, then there would be no match and you would 
+   get *terminus.home* as the hostname, meaning that you would reach the media 
+   server via the internet.  But if you set *nmcli_connection*, you will get 
+   192.168.0.24 as the hostname, meaning that you will reach it directly through 
+   your local wifi network.  Thus, use of *nmcli_connection* allows you to use 
+   the access point name in addition to the router MAC when determining which 
+   hostname to use.
+
 location:
    The default setting for the location (value should be chosen from LOCATIONS) 
    when this network is active.
@@ -136,7 +166,7 @@ proxy:
    The name of the proxy to use by default when this network is active.
 
 In addition to the *NetworkEntry* class definitions, this file may also define 
-*PREFERRED_NETWORKS* and *ARP*.
+*PREFERRED_NETWORKS*, *ARP*, *NMCLI_CONNS*.
 
 *PREFERRED_NETWORKS*:
    A list of strings that specify the preferred networks. It is useful if your 
@@ -156,6 +186,20 @@ In addition to the *NetworkEntry* class definitions, this file may also define
    to which you are connected.  This is settable in the off chance the command 
    is not located in the standard place.  Normally, it should be set to 
    "/usr/sbin/arp -a".
+
+*NMCLI_CONNS*:
+   Command to use to query the network names from Network Manager.  The default 
+   is *None*, in which case *nmcli* is not run at all, with the result that any 
+   *nmcli_connection* attributes on the network entries are ignored.  You should 
+   set it to “nmcli -t -f name connection show --active” on those hosts that 
+   need it.  You can use something like this
+
+   .. code-block:: python
+
+       from sshconfig import gethostname
+
+       if gethostname()  in ['laptop']:
+           NMCLI_CONNS = "nmcli -t -f name connection show --active"
 
 
 ssh.conf
