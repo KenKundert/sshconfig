@@ -4,8 +4,8 @@ Releases
 Latest development release
 --------------------------
 
-    | Version: 2.2
-    | Released: 2022-11-19
+    | Version: 2.2.1
+    | Released: 2023-11-08
 
 - Added *nmcli_connection* attribute to the *NetworkEntry* class.
 - Added *NMCLI_CONNS* setting.
