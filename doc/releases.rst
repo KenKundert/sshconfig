@@ -16,6 +16,11 @@ connects to it directly through a secondary network rather than using the
 primary gateway.
 
 
+2.3 (2024-11-??)
+----------------
+- Add folding to generated ~/.ssh/config file.
+
+
 2.2 (2022-11-19)
 ----------------
 - Make path to arp command user settable.

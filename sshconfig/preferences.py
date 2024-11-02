@@ -34,6 +34,9 @@ UNKNOWN_NETWORK_NAME = "unknown"
 DEFAULT_NETWORK_NAME = "default"
 DATE_FORMAT = "H:mm A on D MMMM YYYY"
 
+def fold(level):
+    return 3*'{' + str(level)
+
 
 # Paths {{{2
 CONFIG_DIR = user_config_dir(PROGRAM_NAME)
@@ -53,16 +56,12 @@ SSH_HEADER = dedent(
     # To make changes in this file, edit files in {config_dir!s} and run:
     #
     #     sshconfig create
-    #
     """
 ).strip()
 
 SSH_DEFAULTS = dedent(
     """
-    #
-    # GLOBAL DEFAULTS
-    #
-
+    # GLOBAL DEFAULTS  {fold}
     {defaults}
     """
 ).strip()
@@ -70,20 +69,14 @@ SSH_DEFAULTS = dedent(
 
 SSH_HOSTS = dedent(
     """
-    #
-    # HOSTS
-    #
-
+    # HOSTS  {fold}
     {hosts}
     """
 ).strip()
 
 SSH_OVERRIDES = dedent(
     """
-    #
-    # GLOBAL OVERRIDES
-    #
-
+    # GLOBAL OVERRIDES  {fold}
     {overrides}
     """
 ).strip()

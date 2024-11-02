@@ -219,7 +219,7 @@ A typical ssh.conf file might look like:
    # Attribute overrides for all hosts
    OVERRIDES = """
        Ciphers aes256-ctr,aes128-ctr,arcfour256,arcfour,aes256-cbc,aes128-cbc
-   """
+   """.strip()
 
    # Attribute defaults for all hosts
    DEFAULTS = """
@@ -234,7 +234,7 @@ A typical ssh.conf file might look like:
        # Enable connection sharing
        ControlMaster auto
        ControlPath /tmp/ssh_mux_%h_%p_%r
-   """
+   """.strip()
 
 All of these entries are optional.  The following attributes are interpreted.
 
@@ -813,15 +813,34 @@ one.
 Both local and remote forwards should be specified as lists. The lists can 
 either be simple strings, or can be tuple pairs if you would like to give 
 a description for the forward. The string that describes the forward has the 
-syntax: 'lclHost:lclPort rmtHost:rmtPort' where lclHost and rmtHost can be 
-either a host name or an IP address and lclPort and rmtPort are port numbers.
-For example:
+syntax: '[host1:]port1 host2:port2' where each host can be either a host name or 
+an IP address and each port is a port number.  *host1* is optional and defaults 
+to *localhost*.
 
-.. code-block:: python
+With `local forwards 
+<https://www.ssh.com/academy/ssh/tunneling-example#local-forwarding>`_ *host1* 
+and *port1* are given from the perspective of the local host (the host from 
+which you initiated the ssh connection) and *host2* and *port2* are given from 
+the perspective of the remote host (the host to which you are connecting).  
+Imagine you are on the host *earth* and using ssh to connect to the host *mars* 
+with a local forward specification of 'localhost:8080 localhost:80'.  Then, 
+anything sent to port 8080 on *earth* is forwarded to port 80 on *mars*.  Once 
+such a connection is in place, navigating to 'http://localhost:80' in your 
+browser allows you to view pages from *marse* if it has a webserver monitoring 
+port 80.  Notice that *localhost* was used twice in the forwarding 
+specification, but each represented a different host.
 
-   '11025 localhost:25'
+With `remote forwards 
+<https://www.ssh.com/academy/ssh/tunneling-example#remote-forwarding>`_ *host1* 
+and *port1* are given from the perspective ot the remote host (the host to which 
+you are connecting) and *host2* and *port2* are given from the perspective of 
+the local host (the host from which you initiated the ssh connection).  Imagine 
+you are on the host *earth* and using ssh to connect to the host *mars*.  Then 
+a remote forward specification of 'localhost:2222 localhost:22' connect port 
+2222 on *mars* to port 22 on *earch*.  Once such a connection is in place, using 
+'ssh -p 2222 localhost' from *mars* connects you to *earth*.
 
-The local host is used to specify what machines can connect to the port locally.
+The optional first host specifies what machines can connect to the port.
 If the *GatewayPorts* setting is set to *yes* on the SSH server, then forwarded 
 ports are accessible to any machine on the network. If the *GatewayPorts* 
 setting is *no*, then the forwarded ports are only available from the local 
@@ -837,6 +856,9 @@ localhost:5280 localhost:5280   accessible only from localhost
 lucifer:5280 localhost:5280     accessible from lucifer
 192.168.0.1:5280 localhost:5280 accessible from 192.168.0.1
 =============================== ==============================
+
+*GatewayPorts* is a setting you specify to the SSH server.  Thus, it should 
+placed in /etc/ssh/sshd_config on the host you are connecting to.
 
 The VNC function is provided for converting VNC host and display number 
 information into a setting suitable for a forward. You can give the local 

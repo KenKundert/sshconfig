@@ -31,6 +31,7 @@ from .preferences import (
     SSH_HEADER,
     SSH_HOSTS,
     SSH_OVERRIDES,
+    fold
 )
 from .sshconfig import NetworkEntry
 from .utilities import two_columns
@@ -139,16 +140,16 @@ class CreateCommand(Command):
         # overrides
         overrides = settings.ssh_overrides
         if overrides:
-            overrides = SSH_OVERRIDES.format(overrides=overrides)
+            overrides = SSH_OVERRIDES.format(overrides=overrides, fold=fold(1))
 
         # hosts
         settings.read_hosts()
-        hosts = SSH_HOSTS.format(hosts=settings.hosts.output())
+        hosts = SSH_HOSTS.format(hosts=settings.hosts.output(), fold=fold(1))
 
         # defaults
         defaults = settings.ssh_defaults
         if defaults:
-            defaults = SSH_DEFAULTS.format(defaults=defaults)
+            defaults = SSH_DEFAULTS.format(defaults=defaults, fold=fold(1))
 
         # combine everything and write as SSH config file
         contents = "\n\n\n".join(

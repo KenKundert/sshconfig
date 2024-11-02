@@ -6,7 +6,7 @@ import re
 from inform import display, indent, is_str, warn
 from shlib import to_path
 
-from .preferences import DEFAULT_NETWORK_NAME, SSH_SETTINGS
+from .preferences import DEFAULT_NETWORK_NAME, SSH_SETTINGS, fold
 from .sshconfig import NetworkEntry
 
 
@@ -128,9 +128,12 @@ class Hosts:
         names_as_list = [name] + (aliases if aliases else [])
         names = " ".join(names_as_list)
         if desc:
-            header = f"{indent(desc.strip(), leader='# ')}\nhost {names}"
+            lines = desc.strip().splitlines()
+            lines = [f"{lines[0]}  {fold(2)}"] + lines[1:]
+            desc = indent('\n'.join(lines), leader='# ')
         else:
-            header = f"host {names}"
+            desc = f"# {names}  {fold(2)}"
+        header = f"{desc}\nhost {names}"
         host = "\n".join([header] + fields.render_host())
         self.hosts.append(host)
         for name in names_as_list:
@@ -374,4 +377,4 @@ def check_forward(attribute, dynamic=False):
         if len(forwards) != 2 or not all(
             [bool(forward_pattern.match(each)) for each in forwards]
         ):
-            exit("Invalid dynamic forward: %s" % attribute[1])
+            exit("Invalid forward: %s" % attribute[1])
