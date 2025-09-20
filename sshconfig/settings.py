@@ -108,7 +108,7 @@ class Settings:
     def set_network(self, given=None):
         networks = []
         if given:
-            network = [NetworkEntry.find(given)]
+            network = NetworkEntry.find(given)
         if not given:
             networks = self.identify_networks()
             network = networks[0] if networks else None
@@ -207,7 +207,12 @@ class Settings:
             arp_table = arp.stdout
             for row in arp_table.split("\n"):
                 try:
-                    name, ipaddr, at, mac, hwtype, on, interface = row.split()
+                    # name, ipaddr, at, mac, hwtype, on, interface = row.split()
+                        # for arp, arp is deprecated and sometimes freezes
+                    ip, _, name, _, mac, state = row.split()
+                        # for ip neighbor
+                    if state == 'STALE':
+                        continue
                     macs.append(mac)
                 except ValueError:
                     continue

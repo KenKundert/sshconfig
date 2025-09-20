@@ -20,7 +20,7 @@ setup(
     license = "GPLv3+",
     packages = "sshconfig".split(),
     entry_points = {"console_scripts": ["sshconfig=sshconfig.main:main"]},
-    install_requires = "appdirs arrow docopt inform shlib".split(),
+    install_requires = "appdirs arrow docopt inform shlib requests".split(),
     python_requires = ">=3.6",
     zip_safe = True,
     keywords = "ssh".split(),

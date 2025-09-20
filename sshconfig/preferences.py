@@ -27,7 +27,9 @@ PROGRAM_NAME = "sshconfig"
 DEFAULT_COMMAND = "create"
 ENCODING = "utf-8"
 INDENT = "    "
-ARP = "/usr/sbin/arp -a"
+# ARP = "/usr/sbin/arp -a"
+ARP = "/sbin/ip neighbor"
+    # arp is deprecated, and sometimes freezes
 NMCLI_CONNS = None
     # use con rather than connection for compatibility with centos6
 UNKNOWN_NETWORK_NAME = "unknown"
