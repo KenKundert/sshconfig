@@ -3,7 +3,7 @@
 # Imports {{{1
 import re
 
-from inform import display, indent, is_str, warn
+from inform import display, indent, is_str, log, warn
 from shlib import to_path
 
 from .preferences import DEFAULT_NETWORK_NAME, SSH_SETTINGS, fold
@@ -157,6 +157,7 @@ class Hosts:
         # Get fields
         attributes = Attributes(entry.fields())
         name = entry.__name__.lower()
+        proxyCommand = attributes.get('proxyCommand')
         forwarding = False
 
         # Return if this is forwarding version and there are no forwards
@@ -230,8 +231,16 @@ class Hosts:
         if attribute:
             key, port, desc = attribute
             fields.append(attribute)
+            n_port = int(port)
         else:
             port = "%p"
+            n_port = 22
+        if n_port in self.settings.blocked_ports and not proxyCommand:
+            if 'without_ports' in self.settings.discard_entries:
+                log(f'discarded because port {n_port} is blocked.', culprit=name)
+                return
+            if self.settings.blocked_port_warning:
+                warn(f'port {n_port} is not available.', culprit=name)
 
         # IdentityFile and IdentitiesOnly
         attribute = attributes.get("identityFile")
@@ -260,6 +269,9 @@ class Hosts:
                 fields.append(('identitiesOnly', 'yes', None))
                 fields.append(("pubkeyAuthentication", "yes", None))
             else:
+                if 'without_identities' in self.settings.discard_entries:
+                    log(f'discarded because identity file was not found.', culprit=name)
+                    return
                 warn('no identity files found.', culprit=name)
 
         # ForwardAgent
@@ -295,14 +307,13 @@ class Hosts:
             fields.append(("exitOnForwardFailure", "yes", None))
 
         # ProxyCommand
-        attribute = attributes.get("proxyCommand")
         network = NetworkEntry.find(self.networks[0])
         network_proxy = network.proxy if network else None
-        if attribute:
-            fields.append(attribute)
+        if proxyCommand:
+            fields.append(proxyCommand)
         elif self.proxy and not (
             self.proxy == entry.__name__.lower()
-            or ((self.proxy == network_proxy) and (self.network in hostnames))
+            or ((self.proxy == network_proxy) and (network.name() in hostnames))
         ):
             # This host does not have a ProxyCommand entry, add it if a global
             # proxy is requested unless this host is the itself the proxy or if

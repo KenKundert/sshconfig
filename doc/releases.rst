@@ -9,6 +9,10 @@ Latest development release
 
 - Added *nmcli_connection* attribute to the *NetworkEntry* class.
 - Added *NMCLI_CONNS* setting.
+- Added *DISCARD_ENTRIES* setting.
+- Added *BLOCKED_PORTS* setting.
+- Added *BLOCKED_PORT_WARNING* setting.
+- Replaced *ARP* setting with *ROUTER_MACS*.
 
 Both these changes support the use of secondary networks, meaning that if your 
 machine is connected to multiple networks, you can configure a host so that ssh 

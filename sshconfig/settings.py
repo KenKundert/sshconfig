@@ -17,19 +17,21 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/.
 
 # Imports {{{1
-from inform import Error, codicil, conjoin, display, full_stop, narrate, warn
+from inform import Error, codicil, conjoin, display, full_stop, log, narrate, warn
 from shlib import Run, to_path
 
 from .core import Hosts
 from .preferences import (
-    ARP,
+    ROUTER_MACS,
     CONFIG_DIR,
+    DISCARD_ENTRIES,
     NMCLI_CONNS,
     SSH_CONFIG_FILE,
     UNKNOWN_NETWORK_NAME,
 )
 from .python import PythonFile
 from .sshconfig import HostEntry, NetworkEntry, locations, ports, set_network_name
+from .utilities import normalize_mac
 
 # Globals {{{1
 sshconfig_names = set(
@@ -56,7 +58,7 @@ class Settings:
     # read_confs() {{{2
     def read_confs(self):
         # read the .conf files in our config directory (except for hosts.conf)
-        for name in "ssh networks locations proxies".split():
+        for name in "ssh networks locations proxies local".split():
             conf_file = to_path(CONFIG_DIR, name + ".conf")
             if conf_file.exists():
                 settings = PythonFile(conf_file).run()
@@ -80,8 +82,12 @@ class Settings:
         self.preferred_networks = self.settings.get("PREFERRED_NETWORKS", [])
         self.locations = self.settings.get("LOCATIONS", {})
         self.proxies = self.settings.get("PROXIES", {})
-        self.arp = self.settings.get("ARP", ARP)
+        self.router_macs = self.settings.get("ROUTER_MACS", ROUTER_MACS)
         self.get_nmcli_conns = self.settings.get("NMCLI_CONNS", NMCLI_CONNS)
+        self.discard_entries = self.settings.get("DISCARD_ENTRIES", DISCARD_ENTRIES)
+        self.blocked_ports = self.settings.get("BLOCKED_PORTS", None) or []
+        self.blocked_ports = [int(p) for p in self.blocked_ports]
+        self.blocked_port_warning = self.settings.get("BLOCKED_PORT_WARNING")
 
         self.available_ciphers = self.settings.get("AVAILABLE_CIPHERS")
         self.available_macs = self.settings.get("AVAILABLE_MACS")
@@ -124,7 +130,7 @@ class Settings:
         self.networks = networks if networks else [network]
 
         if network.ports:
-            ports.available(network.ports)
+            ports.available(network.ports, self.blocked_ports)
         if network.location:
             locations.set_location(network.location)
 
@@ -153,7 +159,7 @@ class Settings:
 
     # set_ports() {{{2
     def set_ports(self, given=None):
-        ports.available(given if given else self.primary_network.ports)
+        ports.available(given if given else self.primary_network.ports, self.blocked_ports)
 
     # set_location() {{{2
     def set_location(self, given=None):
@@ -203,22 +209,35 @@ class Settings:
         # get MAC address of all devices on active networks
         macs = []
         try:
-            arp = Run(self.arp, "sOeW")
-            arp_table = arp.stdout
-            for row in arp_table.split("\n"):
+
+            process = Run(self.router_macs['executable'], "sOeW")
+            for row in process.stdout.splitlines():
+                if not row:
+                    continue
                 try:
-                    # name, ipaddr, at, mac, hwtype, on, interface = row.split()
-                        # for arp, arp is deprecated and sometimes freezes
-                    ip, _, name, _, mac, state = row.split()
-                        # for ip neighbor
-                    if state == 'STALE':
+                    if self.router_macs['style'] == 'ip':  # for 'ip neighbor'
+                        ip, _, name, status, mac, state = row.split()
+                        if state == 'STALE':
+                            continue
+                    else:
+                        assert self.router_macs['style'] in ['arp', 'custom']
+                        mac = row.split()[int(self.router_macs.get('column', 1))-1]
+                    if ':' not in mac:
+                        log(f"available router MAC: {mac} — skipped")
                         continue
+                    mac = normalize_mac(mac)
+                    log(f"available router MAC: {mac}")
                     macs.append(mac)
-                except ValueError:
+                except ValueError as e:
+                    log(f"ignoring: {row}")
                     continue
         except Error as e:
             e.report()
             return []
+
+        # normalize router MAC addresses in known networks
+        for network in known_networks(self.preferred_networks):
+            network.routers = [normalize_mac(mac) for mac in network.routers]
 
         # filter out any network devices that are not routers for known networks
         networks = [

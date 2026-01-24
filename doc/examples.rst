@@ -253,9 +253,8 @@ Access Restrictions
 
 In some situations you may be sitting behind firewalls that prevent direct 
 access to your SSH server. Generally, firewalls allow use of common ports, such 
-as 80 (http), 443 (https), and perhaps 53 (dns).  In this case, you simply 
-configure your SSH server to listen on these ports. This situation is 
-illustrated here:
+as 80 (http) or 443 (https).  In this case, you simply configure your SSH server 
+to listen on these ports. This situation is illustrated here:
 
 .. image:: figures/proxy1.svg
     :width: 50%
@@ -268,7 +267,7 @@ the desired port when you run *SSHconfig*:
 
     class SSH_Server(HostEntry):
         hostname = 'NNN.NNN.NNN.NNN'
-        port = ports.choose([22, 53, 80, 443])
+        port = ports.choose([22, 80, 443])
 
 However, it may be that those ports are already in use. For example, you may 
 have a webserver that is using ports 80 and 443.  In this case it is possible to 
@@ -294,7 +293,7 @@ host entry can be done as follows:
 
     class SSH_Server(HostEntry):
         hostname = 'NNN.NNN.NNN.NNN'
-        port = ports.choose([22, 53, 80, 443])
+        port = ports.choose([22, 80, 443])
         if port in [80, 443]:
             proxyCommand = 'corkscrew %h %p localhost 22'
 
@@ -330,7 +329,7 @@ in an SSL/TLS tunnel, you can use `ProxyTunnel
 
     class SSH_Server(HostEntry):
         hostname = 'NNN.NNN.NNN.NNN'
-        port = ports.choose([22, 53, 80, 443])
+        port = ports.choose([22, 80, 443])
         if port == 80:
             proxyCommand = 'proxytunnel -q -p %h:%p -d localhost:22'
         elif port == 443:

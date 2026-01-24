@@ -166,7 +166,7 @@ proxy:
    The name of the proxy to use by default when this network is active.
 
 In addition to the *NetworkEntry* class definitions, this file may also define 
-*PREFERRED_NETWORKS*, *ARP*, *NMCLI_CONNS*.
+*PREFERRED_NETWORKS*, *ROUTER_MACS*, *NMCLI_CONNS*.
 
 *PREFERRED_NETWORKS*:
    A list of strings that specify the preferred networks. It is useful if your 
@@ -181,11 +181,51 @@ In addition to the *NetworkEntry* class definitions, this file may also define
    simultaneously, and *Work* is the wired network and is considerably faster 
    than *WorkWireless*.
 
-*ARP*:
-   Command to use to query the network neighbor cache to determine the network 
-   to which you are connected.  This is settable in the off chance the command 
-   is not located in the standard place.  Normally, it should be set to 
-   "/usr/sbin/arp -a".
+*ROUTER_MACS*:
+   A dictionary that specifies how *sshconfig* can determine the MAC addresss of 
+   the available routers.  The following fields can be specified:
+
+   *style*:
+        May be either 'ip', 'arp', or 'custom'.  'ip' should be specified when 
+        using the *ip neighbor* command is used.  'arp' should be used if the 
+        *arp* is used.  And 'custom' should be used if you write your own 
+        program to provide the MAC addresses.  Required.
+        For all the choices, it is assumed that only one MAC address is provided 
+        per line.  For 'arp' and 'custom' you should specify the *column* field.
+
+    *executable*:
+        The command to run to generate the MAC addresses. Required.
+
+    *column*:
+        The index of the column that holds the MAC address.  The index of the 
+        first column is 1.
+
+    Here is the default value::
+
+        ROUTER_MACS = dict(
+            style = "ip",
+            executable = "ip neighbor",
+        )
+
+    Generally using *ip* is preferred.  If the *ip* command is not available you 
+    can use::
+
+        ROUTER_MACS = dict(
+            style = "arp",
+            executable = "/sbin/arp -e",
+            column = "3",
+        )
+
+    or:
+
+        ROUTER_MACS = dict(
+            style = "arp",
+            executable = "arp -a",
+            column = "4",
+        )
+
+    This last version should be used on MacOS.
+
 
 *NMCLI_CONNS*:
    Command to use to query the network names from Network Manager.  The default 
@@ -257,7 +297,6 @@ All of these entries are optional.  The following attributes are interpreted.
     in OVERRIDES.  It will be added on the individual hosts and only set to yes 
     if they are trusted.
 
-
 *DEFAULTS*:
     A string that specifies the SSH settings that should be used on all hosts,
     without overriding conflicting settings specified in the host entry.  They 
@@ -288,6 +327,30 @@ versions of SSH that might not have all the best algorithms.
     A list of available key exchange algorithms. If a key exchange algorithm is 
     specified on a host entry that is not in this list, it is ignored when 
     creating the SSH configuration.
+
+The following settings allow you to filter out unusable host entries.
+
+*BLOCKED_PORTS*:
+    A list of port numbers that are blocked by the local host.  This is useful 
+    if host sits behind an oppressive firewall that blocks certain ports.
+
+    Often using the *ports* setting on the network is a better approach to 
+    blocked ports.
+
+*BLOCKED_PORT_WARNING*:
+    Issue a warning if a host has only blocked ports.
+
+*DISCARD_ENTRIES*:
+    A list of conditions that would result in a host entry to be discarded.  It 
+    takes the following values:
+
+    'without_ports':
+        If, due to the presence of blocked ports, a host has no valid ports 
+        available, the host entry will be discarded.
+
+    'without_identities':
+        If the identity file specified for a host is not present the host entry 
+        is discarded.
 
 
 proxies.conf
@@ -547,8 +610,8 @@ the ISP to pass all port 80 traffic through a transparent http proxy. This would
 prevent port 80 from being used by SSH.  So, if at a very minimum, if you are 
 going to configure a server to support multiple SSH ports, you should try to 
 include port 443 in your list.  If you would like to support more, I recommend 
-22 (SSH), 53 (DNS), 80 (HTTP), 443 (HTTPS).  In my experience, these are the 
-least likely to be blocked.
+22 (SSH), 80 (HTTP), 443 (HTTPS).  In my experience, these are the least likely 
+to be blocked.
 
 If a host is capable of accepting connections on more than one port, you should 
 use the *choose()* method of the ports object to select the appropriate port.
@@ -1067,3 +1130,12 @@ If you contrast this with farm-jupiter above, you will see that the name is
 different, as is the trusted status (farm-jupiter inherits 'trusted' from Host, 
 whereas jupiter does not). Also, there are two versions, one with port 
 forwarding and one without.
+
+
+local.conf
+""""""""""
+
+This file may contain any other setting.  It is used to contain local overrides.  
+Here the assumption is that you are copying your configuration files to multiple 
+machines and you need to override certain settings on select machines.
+

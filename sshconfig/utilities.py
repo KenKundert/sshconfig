@@ -73,3 +73,11 @@ def error_source():
         filename = get_active_python_file()
         line = tb.tb_next.tb_lineno
     return filename, 'line %s' % line
+
+# normalize_mac {{{1
+def normalize_mac(mac):
+    return ':'.join((normalize_hex(s) for s in mac.split(':')))
+
+def normalize_hex(s):
+    val = int(s, 16)
+    return hex(val)[2:]

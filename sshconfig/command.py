@@ -17,13 +17,9 @@
 
 # Imports {{{1
 import sys
-from textwrap import dedent
-
 import arrow
 from docopt import docopt
-
-from inform import Error, columns, display, full_stop, narrate, output
-
+from inform import Error, columns, dedent, display, full_stop, join, narrate, output
 from .preferences import (
     DATE_FORMAT,
     DEFAULT_COMMAND,
@@ -134,7 +130,8 @@ class CreateCommand(Command):
         now = arrow.now()
         time = now.format(DATE_FORMAT)
         header = SSH_HEADER.format(
-            network=network, time=time, config_dir=settings.config_dir
+            network=network, time=time, config_dir=settings.config_dir,
+            cmdline=join(*sys.argv)
         )
 
         # overrides

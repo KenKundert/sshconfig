@@ -230,21 +230,29 @@ class HostEntry:
 class Ports:
     def __init__(self):
         self.available_ports = None
+        self.blocked_ports = []
 
-    def available(self, ports):
+    def available(self, ports, blocked_ports):
+        self.blocked_ports = blocked_ports or []
+        if is_str(ports):
+            ports = ports.replace(',', ' ').split()
+        ports = ports or []
+        ports = [int(port) for port in ports]
         try:
-            self.available_ports = [int(port) for port in ports.split(",")]
-        except AttributeError:
-            self.available_ports = ports
+            self.available_ports = [
+                port
+                for port in ports
+                if port not in self.blocked_ports
+            ]
         except ValueError as e:
             raise Error(full_stop(e))
 
-    def not_available(self, port):
-        return self.available_ports and port not in self.available_ports
-
     def choose(self, supported_ports):
-        if self.available_ports is None:
-            return supported_ports[0]
+        if not self.available_ports:
+            for port in supported_ports:
+                if port not in self.blocked_ports:
+                    return port
+            return None
         for port in self.available_ports:
             if port in supported_ports:
                 return port
