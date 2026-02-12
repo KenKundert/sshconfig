@@ -18,7 +18,8 @@
 
 # Imports {{{1
 from inform import Error, codicil, conjoin, display, full_stop, log, narrate, warn
-from shlib import Run, to_path
+from shlib import Run, to_path, set_prefs
+set_prefs(use_inform=True, log_cmd=True)
 
 from .core import Hosts
 from .preferences import (
@@ -194,7 +195,6 @@ class Settings:
     # Identifies which networks are currently available
     # uses the arp and nmcli commands
     def identify_networks(self):
-
         def known_networks(preferred):
             # First offer the preferred networks, in order
             for name in preferred:
@@ -228,7 +228,7 @@ class Settings:
                     mac = normalize_mac(mac)
                     log(f"available router MAC: {mac}")
                     macs.append(mac)
-                except ValueError as e:
+                except ValueError:
                     log(f"ignoring: {row}")
                     continue
         except Error as e:
@@ -246,6 +246,18 @@ class Settings:
             for mac in macs
             if mac in network.routers
         ]
+
+        # when on a known network using a vpn, generally want to exclude the 
+        # known network from networks to avoid confusion
+        filtered = []
+        exclude = set()
+        for network in networks:
+            if network.name() not in exclude:
+                filtered.append(network)
+            exclude.update(
+                e.lower() for e in getattr(network, 'exclude', [])
+            )
+        networks = filtered
 
         # get SSID of WiFi network
         # if only on wifi, this will identify the same network already

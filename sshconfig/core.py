@@ -219,8 +219,8 @@ class Hosts:
                         return
                 attribute = key, hostname, desc
             else:
-                hostnames = {}
                 hostname = hostnames
+                hostnames = {}
             fields.append(attribute)
         else:
             hostname = "%h"
@@ -270,7 +270,7 @@ class Hosts:
                 fields.append(("pubkeyAuthentication", "yes", None))
             else:
                 if 'without_identities' in self.settings.discard_entries:
-                    log(f'discarded because identity file was not found.', culprit=name)
+                    log('discarded because identity file was not found.', culprit=name)
                     return
                 warn('no identity files found.', culprit=name)
 
@@ -323,6 +323,8 @@ class Hosts:
             # generally indicates that there is a direct path to this host on
             # this network and the proxy is not needed.
 
+            assert hostname
+            assert port
             fields.append(
                 (
                     "proxyCommand",

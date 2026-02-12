@@ -79,6 +79,23 @@ routers:
    A list of MAC addresses for the router that are used to identify the network.  
    To find these, connect to the network and run the /sbin/arp command.
 
+location:
+   The default setting for the location (value should be chosen from LOCATIONS) 
+   when this network is active.
+
+ports:
+   The default list of ports that should be available when this network is 
+   active.
+
+proxy:
+   The name of the proxy to use by default when this network is active.
+
+exclude:
+   When on a known network that is using a VPN, you generally want to exclude 
+   the known networks to avoid confusion.  Use this setting for the network 
+   associated with the VPN to exclude the base network or networks.  For this to 
+   work, the network for the VPN must be the preferred network.
+
 nmcli_connection:
    The name used by Network Manager to refer to this network.  This is normally 
    not necessary, however it allows secondary networks to be recognized.  
@@ -108,14 +125,6 @@ nmcli_connection:
    your local wifi network.  Thus, use of *nmcli_connection* allows you to use 
    the access point name in addition to the router MAC when determining which 
    hostname to use.
-
-location:
-   The default setting for the location (value should be chosen from LOCATIONS) 
-   when this network is active.
-
-ports:
-   The default list of ports that should be available when this network is 
-   active.
 
 init_script:
    A script that should be run before using this network. May be a string or 
@@ -161,9 +170,6 @@ init_script:
    copy the 'Device MAC address' into 'Cloned MAC address' and change a few 
    digits. The digits are hexadecimal, so choose values between 0-9A-F. Then 
    click 'Save', 'Close', and restart your network connection.
-
-proxy:
-   The name of the proxy to use by default when this network is active.
 
 In addition to the *NetworkEntry* class definitions, this file may also define 
 *PREFERRED_NETWORKS*, *ROUTER_MACS*, *NMCLI_CONNS*.
@@ -216,7 +222,7 @@ In addition to the *NetworkEntry* class definitions, this file may also define
             column = "3",
         )
 
-    or:
+    or::
 
         ROUTER_MACS = dict(
             style = "arp",
