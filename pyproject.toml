@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sshconfig"
+version = "2.2.1"
+description = "SSH config file generator"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = {text = "GPLv3+"}
+authors = [
+    {name="Ken Kundert", email="sshconfig@nurdletech.com"}
+]
+requires-python = ">=3.6"
+keywords = ["ssh"]
+dependencies = [
+    "appdirs",
+    "arrow",
+    "docopt",
+    "inform",
+    "shlib",
+    "requests"
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Natural Language :: English",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Topic :: Utilities"
+]
+
+[project.urls]
+Homepage = "https://sshconfig.readthedocs.io"
+Download = "https://github.com/kenkundert/sshconfig/tarball/master"
+
+[project.scripts]
+sshconfig = "sshconfig.main:main"
+
+[tool.pytest.ini_options]
+addopts = "--tb=short"
+
+[tool.ruff]
+exclude = [".tox", "doc"]
+
+[tool.ruff.lint]
+select = ["F"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"sshconfig/__init__.py" = ["F401"]
