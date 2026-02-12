@@ -217,7 +217,7 @@ class Settings:
                 try:
                     if self.router_macs['style'] == 'ip':  # for 'ip neighbor'
                         ip, _, name, status, mac, state = row.split()
-                        if state == 'STALE':
+                        if state == 'FAILED':
                             continue
                     else:
                         assert self.router_macs['style'] in ['arp', 'custom']
