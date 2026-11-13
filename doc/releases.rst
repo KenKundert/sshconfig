@@ -20,9 +20,9 @@ connects to it directly through a secondary network rather than using the
 primary gateway.
 
 
-2.3 (2024-11-??)
+2.3 (2026-11-12)
 ----------------
-- Add folding to generated ~/.ssh/config file.
+- A variety of fixes and refinements.
 
 
 2.2 (2022-11-19)
