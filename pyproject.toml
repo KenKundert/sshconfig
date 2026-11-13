@@ -1,6 +1,6 @@
 [project]
 name = "sshconfig"
-version = "2.2.1"
+version = "2.3"
 description = "SSH config file generator"
 readme = {file = "README.rst", content-type = "text/x-rst"}
 license = "GPL-3.0-or-later"
