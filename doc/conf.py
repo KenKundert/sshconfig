@@ -32,6 +32,8 @@ extensions = '''
     sphinx.ext.napoleon
     sphinx.ext.todo
     sphinx.ext.viewcode
+    sphinx_rtd_theme
+    sphinx_llms_txt
 '''.split()
 
 # Add any paths that contain templates here, relative to this directory.
@@ -48,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'sshconfig'
-copyright = u'2017-2023, Ken Kundert'
+copyright = u'2017-2026, Ken Kundert'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
